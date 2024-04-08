@@ -1,0 +1,45 @@
+<!--
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    https://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+-->
+<?jelly escape-by-default='true'?>
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form" xmlns:c="/lib/credentials">
+    <link rel="stylesheet" href="${rootURL}/plugin/defectdojo/css/global.css" type="text/css" />
+
+    <f:section title="DefectDojo">
+        <f:entry title="${%defectdojo.url}" field="defectDojoUrl">
+            <f:textbox id="defectdojo.url" checkMethod="post" />
+        </f:entry>
+        <f:entry title="${%defectdojo.apikey}" field="defectDojoApiKey">
+            <c:select id="defectdojo.apikey" />
+        </f:entry>
+        <f:entry title="${%defectdojo.autocreateproducts}" field="defectDojoAutoCreateProducts">
+            <f:checkbox id="defectdojo.autocreateproducts" default="false"/>
+        </f:entry>
+        <f:entry title="${%defectdojo.autocreateengagements}" field="defectDojoAutoCreateEngagements">
+            <f:checkbox id="defectdojo.autocreateengagements" default="false"/>
+        </f:entry>
+        <f:entry title="${%defectdojo.reuploadscan}" field="defectDojoReuploadScan">
+            <f:checkbox id="defectdojo.reuploadscan" default="false"/>
+        </f:entry>
+        <f:advanced>
+            <f:entry title="${%defectdojo.connection.timeout}" field="defectDojoConnectionTimeout">
+                <f:number id="defectdojo.connection.timeout" default="5" clazz="non-negative-number-required" min="0" />
+            </f:entry>
+            <f:entry title="${%defectdojo.read.timeout}" field="defectDojoReadTimeout">
+                <f:number id="defectdojo.read.timeout" default="5" clazz="non-negative-number-required" min="0" />
+            </f:entry>
+        </f:advanced>
+        <f:validateButton title="${%defectdojo.connection.test}" progress="${%defectdojo.connection.testing}" method="testConnectionGlobal" with="defectDojoUrl,defectDojoApiKey" />
+    </f:section>
+
+</j:jelly>

@@ -1,0 +1,7 @@
+<?jelly escape-by-default='true'?>
+<div>
+    <p>
+        This plug-in publishes scan report of supported tools to DefectDojo.
+        <a href="https://defectdojo.com/">DefectDojo</a> is platform that helps to automate the tools currently in use, combine findings, and apply templates for SLAs and mitigation—all tracked to the product or product groups defined. 
+    </p>
+</div>
