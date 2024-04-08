@@ -1,0 +1,6 @@
+/.idea/
+/.vscode/
+/target/
+/work/
+/src/main/webapp/css/bootstrap-vue.min.css
+/src/main/webapp/css/bootstrap.min.css
