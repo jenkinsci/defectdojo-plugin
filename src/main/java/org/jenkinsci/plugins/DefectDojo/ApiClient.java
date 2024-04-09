@@ -275,9 +275,6 @@ public class ApiClient {
                     case HTTP_UNAUTHORIZED:
                         logger.log(Messages.Builder_Unauthorized());
                         break;
-                    case HTTP_NOT_FOUND:
-                        logger.log(Messages.Builder_Product_NotFound());
-                        break;
                     default:
                         logger.log(Messages.ApiClient_Error_Connection(status, HttpStatus.valueOf(status).getReasonPhrase()));
                         break;
@@ -339,7 +336,6 @@ public class ApiClient {
             try (var response = httpClient.newCall(request).execute()) {
                 final var body = response.body().string();
                 if (!response.isSuccessful()) {
-                    final int status = response.code();
                     logger.log(body);
                 }
                 final var results = getRequestResult(body);
