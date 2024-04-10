@@ -146,6 +146,7 @@ public class DescriptorImpl extends BuildStepDescriptor<Publisher> implements Se
      * @return ListBoxModel
      */
     @POST
+    @SuppressWarnings("lgtm[jenkins/credentials-fill-without-permission-check]")
     public ListBoxModel doFillProductIdItems(@QueryParameter final String defectDojoUrl, @QueryParameter final String defectDojoApiKey, @AncestorInPath @Nullable final Item item) {
         final ListBoxModel projects = new ListBoxModel();
         try {
@@ -175,6 +176,7 @@ public class DescriptorImpl extends BuildStepDescriptor<Publisher> implements Se
      * @return ListBoxModel
      */
     @POST
+    @SuppressWarnings("lgtm[jenkins/credentials-fill-without-permission-check]")
     public ListBoxModel doFillEngagementIdItems(@QueryParameter final String defectDojoUrl, @QueryParameter final String defectDojoApiKey, @QueryParameter("productId") String product, @AncestorInPath @Nullable final Item item) {
         final ListBoxModel engagements = new ListBoxModel();
         try {
@@ -204,6 +206,7 @@ public class DescriptorImpl extends BuildStepDescriptor<Publisher> implements Se
      * @return ListBoxModel
      */
     @POST
+    @SuppressWarnings("lgtm[jenkins/credentials-fill-without-permission-check]")
     public ListBoxModel doFillScanTypeItems(@QueryParameter final String defectDojoUrl, @QueryParameter final String defectDojoApiKey, @AncestorInPath @Nullable final Item item) {
         final ListBoxModel projects = new ListBoxModel();
         try {
@@ -225,6 +228,7 @@ public class DescriptorImpl extends BuildStepDescriptor<Publisher> implements Se
     }
 
     @POST
+    @SuppressWarnings("lgtm[jenkins/credentials-fill-without-permission-check]")
     public ListBoxModel doFillDefectDojoApiKeyItems(@QueryParameter final String credentialsId, @AncestorInPath final Item item) {
         StandardListBoxModel result = new StandardListBoxModel();
         if (item == null) {

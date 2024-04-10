@@ -36,6 +36,7 @@ public class ScanProperties extends AbstractDescribableImpl<ScanProperties> impl
          * @return ListBoxModel
          */
         @POST
+        @SuppressWarnings("lgtm[jenkins/credentials-fill-without-permission-check]")
         public ListBoxModel doFillScanTpeItems(@RelativePath("..") @QueryParameter final String defectDojoUrl, @RelativePath("..") @QueryParameter final String defectDojoApiKey, @AncestorInPath @Nullable final Item item) {
             io.jenkins.plugins.DefectDojo.DescriptorImpl pluginDescriptor = Jenkins.get().getDescriptorByType(io.jenkins.plugins.DefectDojo.DescriptorImpl.class);
             return pluginDescriptor.doFillScanTypeItems(defectDojoUrl, defectDojoApiKey, item);

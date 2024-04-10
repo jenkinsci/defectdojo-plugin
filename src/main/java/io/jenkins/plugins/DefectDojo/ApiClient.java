@@ -34,6 +34,7 @@ import okhttp3.Request;
 import okhttp3.MultipartBody;
 import okhttp3.RequestBody;
 import org.apache.commons.lang.StringUtils;
+import org.kohsuke.stapler.interceptor.RequirePOST;
 import org.springframework.http.HttpStatus;
 import org.springframework.retry.RetryPolicy;
 import org.springframework.retry.backoff.UniformRandomBackOffPolicy;
@@ -109,6 +110,7 @@ public class ApiClient {
 
     @NonNull
     @SuppressFBWarnings("NP_NULL_ON_SOME_PATH_FROM_RETURN_VALUE")
+    @SuppressWarnings("lgtm[jenkins/credentials-fill-without-permission-check]")
     public boolean testConnection() throws ApiClientException {
         final var request = createRequest(URI.create(PRODUCT_URL));
         return executeWithRetry(() -> {
@@ -166,8 +168,8 @@ public class ApiClient {
     }
 
     @NonNull
-    @SuppressWarnings("deprecation")
     @SuppressFBWarnings("NP_NULL_ON_SOME_PATH_FROM_RETURN_VALUE")
+    @SuppressWarnings({"deprecation","lgtm[jenkins/credentials-fill-without-permission-check]"})
     public Boolean upload(final String projectId, final String engagementId, @Nullable final String sourceCodeUri, @Nullable String branchTag, @Nullable String commitHash,
             @NonNull final FilePath artifact, @NonNull final String scanType, boolean reuploadScan) throws IOException, InterruptedException {
         if (!artifact.exists()) {
@@ -243,6 +245,7 @@ public class ApiClient {
 
     }
 
+    @RequirePOST
     public String createEngagement(String engagementName, String productId, @Nullable String sourceCodeUrl) throws IOException {
         final String defaultValues = "{\"description\": \"Auto-created via Jenkins\",\"engagement_type\":\"Interactive\",\"status\": \"In Progress\",\"deduplication_on_engagement\": \"true\"}";
         JSONObject jsonBody = JSONObject.fromObject(defaultValues);
@@ -303,6 +306,7 @@ public class ApiClient {
 
     @NonNull
     @SuppressFBWarnings("NP_NULL_ON_SOME_PATH_FROM_RETURN_VALUE")
+    @SuppressWarnings("lgtm[jenkins/credentials-fill-without-permission-check]")
     private List<Object> getPaged(final int offset, final int limit, final String URL) throws ApiClientException {
         final var uri = UriComponentsBuilder.fromUriString(URL)
                 .queryParam("limit", "{limit}")
@@ -331,6 +335,7 @@ public class ApiClient {
         return getIdFromDojo(createRequest(uri));
     }
 
+    @SuppressWarnings("lgtm[jenkins/credentials-fill-without-permission-check]")
     private String getIdFromDojo(final Request request) throws ApiClientException {
         return executeWithRetry(() -> {
             try (var response = httpClient.newCall(request).execute()) {
