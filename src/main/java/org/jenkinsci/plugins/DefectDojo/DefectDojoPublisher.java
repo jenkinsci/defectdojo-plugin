@@ -182,7 +182,7 @@ public final class DefectDojoPublisher extends Recorder implements SimpleBuildSt
             logger.log(Messages.Builder_Artifact_Unspecified());
             throw new AbortException(Messages.Builder_Artifact_Unspecified());
         }
-        if (effectiveScanType == null) {
+        if (StringUtils.isBlank(effectiveScanType)) {
             logger.log(Messages.Builder_ScanType_Unspecified());
             throw new AbortException(Messages.Builder_ScanType_Unspecified());
         }
