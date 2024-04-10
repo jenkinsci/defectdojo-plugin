@@ -11,12 +11,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jenkinsci.plugins.DefectDojo;
+package io.jenkins.plugins.DefectDojo;
 
 import hudson.util.FormValidation;
 import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
+
 
 class PluginUtilTest {
 

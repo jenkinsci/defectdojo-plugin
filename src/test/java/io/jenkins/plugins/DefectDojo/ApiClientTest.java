@@ -11,7 +11,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jenkinsci.plugins.DefectDojo;
+package io.jenkins.plugins.DefectDojo;
 
 import io.netty.handler.codec.http.HttpHeaderNames;
 import io.netty.handler.codec.http.HttpHeaderValues;
@@ -19,6 +19,7 @@ import io.netty.handler.codec.http.HttpResponseStatus;
 import java.io.IOException;
 import java.net.ConnectException;
 import okhttp3.OkHttpClient;
+
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;

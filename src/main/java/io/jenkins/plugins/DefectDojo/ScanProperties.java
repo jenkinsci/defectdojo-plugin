@@ -1,4 +1,4 @@
-package org.jenkinsci.plugins.DefectDojo;
+package io.jenkins.plugins.DefectDojo;
 
 import edu.umd.cs.findbugs.annotations.Nullable;
 import hudson.Extension;
@@ -16,15 +16,16 @@ import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.QueryParameter;
 import org.kohsuke.stapler.verb.POST;
 
+
 @Getter
 @lombok.NoArgsConstructor(onConstructor_ = {@DataBoundConstructor})
 @EqualsAndHashCode(callSuper = false, doNotUseGetters = true)
-public class EngagementProperties extends AbstractDescribableImpl<EngagementProperties> implements Serializable {
+public class ScanProperties extends AbstractDescribableImpl<ScanProperties> implements Serializable {
 
     private static final long serialVersionUID = 5343757342998957784L;
 
     @Extension
-    public static class DescriptorImpl extends Descriptor<EngagementProperties> {
+    public static class DescriptorImpl extends Descriptor<ScanProperties> {
 
         /**
          * Retrieve the projects to populate the dropdown.
@@ -35,9 +36,9 @@ public class EngagementProperties extends AbstractDescribableImpl<EngagementProp
          * @return ListBoxModel
          */
         @POST
-        public ListBoxModel doFillParentIdItems(@RelativePath("..") @QueryParameter final String defectDojoUrl, @RelativePath("..") @QueryParameter final String defectDojoApiKey, @QueryParameter("productId") String product, @AncestorInPath @Nullable final Item item) {
-            org.jenkinsci.plugins.DefectDojo.DescriptorImpl pluginDescriptor = Jenkins.get().getDescriptorByType(org.jenkinsci.plugins.DefectDojo.DescriptorImpl.class);
-            return pluginDescriptor.doFillEngagementIdItems(defectDojoUrl, defectDojoApiKey, product, item);
+        public ListBoxModel doFillScanTpeItems(@RelativePath("..") @QueryParameter final String defectDojoUrl, @RelativePath("..") @QueryParameter final String defectDojoApiKey, @AncestorInPath @Nullable final Item item) {
+            io.jenkins.plugins.DefectDojo.DescriptorImpl pluginDescriptor = Jenkins.get().getDescriptorByType(io.jenkins.plugins.DefectDojo.DescriptorImpl.class);
+            return pluginDescriptor.doFillScanTypeItems(defectDojoUrl, defectDojoApiKey, item);
         }
     }
 }

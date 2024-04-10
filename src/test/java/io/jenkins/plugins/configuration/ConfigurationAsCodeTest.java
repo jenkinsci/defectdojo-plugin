@@ -1,10 +1,11 @@
-package org.jenkinsci.plugins.configuration;
+package io.jenkins.plugins.configuration;
 
+import io.jenkins.plugins.DefectDojo.DescriptorImpl;
 import io.jenkins.plugins.casc.ConfigurationContext;
 import io.jenkins.plugins.casc.ConfiguratorRegistry;
 import io.jenkins.plugins.casc.misc.ConfiguredWithCode;
 import io.jenkins.plugins.casc.misc.JenkinsConfiguredWithCodeRule;
-import org.jenkinsci.plugins.DefectDojo.DescriptorImpl;
+
 import org.junit.ClassRule;
 import org.junit.Test;
 

@@ -11,7 +11,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jenkinsci.plugins.DefectDojo;
+package io.jenkins.plugins.DefectDojo;
 
 import edu.umd.cs.findbugs.annotations.Nullable;
 import hudson.Extension;
@@ -49,7 +49,7 @@ public final class ProductProperties extends AbstractDescribableImpl<ProductProp
          */
         @POST
         public ListBoxModel doFillParentIdItems(@RelativePath("..") @QueryParameter final String defectDojoUrl, @RelativePath("..") @QueryParameter final String defectDojoApiKey, @AncestorInPath @Nullable final Item item) {
-            org.jenkinsci.plugins.DefectDojo.DescriptorImpl pluginDescriptor = Jenkins.get().getDescriptorByType(org.jenkinsci.plugins.DefectDojo.DescriptorImpl.class);
+            io.jenkins.plugins.DefectDojo.DescriptorImpl pluginDescriptor = Jenkins.get().getDescriptorByType(io.jenkins.plugins.DefectDojo.DescriptorImpl.class);
             return pluginDescriptor.doFillProductIdItems(defectDojoUrl, defectDojoApiKey, item);
         }
     }

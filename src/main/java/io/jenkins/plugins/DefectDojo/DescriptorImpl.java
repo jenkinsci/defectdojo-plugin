@@ -11,7 +11,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jenkinsci.plugins.DefectDojo;
+package io.jenkins.plugins.DefectDojo;
 
 import com.cloudbees.plugins.credentials.CredentialsProvider;
 import com.cloudbees.plugins.credentials.common.StandardListBoxModel;
@@ -53,7 +53,7 @@ import org.kohsuke.stapler.verb.POST;
  * class is marked as public so that it can be accessed from views.
  * <p>
  * See
- * <code>src/main/resources/org/jenkinsci/plugins/DefectDojo/DefectDojoPublisher/*.jelly</code>
+ * <code>src/main/resources/io/jenkins/plugins/DefectDojo/DefectDojoPublisher/*.jelly</code>
  * for the actual HTML fragment for the configuration screen.
  */
 @Extension
