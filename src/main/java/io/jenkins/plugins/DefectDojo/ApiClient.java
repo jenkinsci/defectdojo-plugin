@@ -60,7 +60,7 @@ public class ApiClient {
     static final String ENGAGEMENT_URL = API_URL + "/engagements/";
     static final String UPLOAD_URL = API_URL + "/import-scan/";
     static final String REUPLOAD_URL = API_URL + "/reimport-scan/";
-    static final String PRODUCT_URL = API_URL + "/products";
+    static final String PRODUCT_URL = API_URL + "/products/";
     static final String SCAN_TYPE_URL = API_URL + "/test_types";
     static final String TESTS_URL = API_URL + "/tests";
     static final String LOOKUP_TEST_BY_EGAGEMENT_ID_PARAM = "engagement";
@@ -137,8 +137,8 @@ public class ApiClient {
     }
 
     @NonNull
-    public List<JSONObject> getEngagements(final int productID) throws ApiClientException {
-        String URL = ENGAGEMENT_URL + "?product=" + String.valueOf(productID);
+    public List<JSONObject> getEngagements(final String productId) throws ApiClientException {
+        String URL = ENGAGEMENT_URL + "?product=" + productId;
         return getData(URL);
     }
 
@@ -260,10 +260,44 @@ public class ApiClient {
         if (StringUtils.isNotBlank(sourceCodeUrl)) {
             jsonBody.put("source_code_management_uri", sourceCodeUrl);
         }
-        
-        logger.log(jsonBody.toString());
 
         final var request = createRequest(URI.create(ENGAGEMENT_URL), "POST", RequestBody.create(jsonBody.toString(), okhttp3.MediaType.parse(APPLICATION_JSON_VALUE)));
+        return executeWithRetry(() -> {
+            try (var response = httpClient.newCall(request).execute()) {
+                final var body = response.body().string();
+                final int status = response.code();
+                // Checks the server response
+                switch (status) {
+                    case HTTP_CREATED:
+                        return (JSONObject.fromObject(body).get("id")).toString();
+                    case HTTP_BAD_REQUEST:
+                        logger.log(Messages.Builder_Payload_Invalid());
+                        break;
+                    case HTTP_UNAUTHORIZED:
+                        logger.log(Messages.Builder_Unauthorized());
+                        break;
+                    default:
+                        logger.log(Messages.ApiClient_Error_Connection(status, HttpStatus.valueOf(status).getReasonPhrase()));
+                        break;
+                }
+                logger.log(body);
+                return null;
+            }
+        });
+    }
+
+    @RequirePOST
+    public String createProduct(String productName, @Nullable String origin) throws IOException {
+        final String defaultValues = "{\"description\": \"Auto-created via Jenkins\",\"prod_type\":\"1\"}";
+        JSONObject jsonBody = JSONObject.fromObject(defaultValues);
+        
+        jsonBody.put("name", productName);
+
+        if (StringUtils.isNotBlank(origin)) {
+            jsonBody.put("origin", origin);
+        }
+
+        final var request = createRequest(URI.create(PRODUCT_URL), "POST", RequestBody.create(jsonBody.toString(), okhttp3.MediaType.parse(APPLICATION_JSON_VALUE)));
         return executeWithRetry(() -> {
             try (var response = httpClient.newCall(request).execute()) {
                 final var body = response.body().string();

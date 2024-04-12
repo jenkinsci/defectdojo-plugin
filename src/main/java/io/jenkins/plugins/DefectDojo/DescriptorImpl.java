@@ -177,7 +177,7 @@ public class DescriptorImpl extends BuildStepDescriptor<Publisher> implements Se
      */
     @POST
     @SuppressWarnings("lgtm[jenkins/credentials-fill-without-permission-check]")
-    public ListBoxModel doFillEngagementIdItems(@QueryParameter final String defectDojoUrl, @QueryParameter final String defectDojoApiKey, @QueryParameter("productId") String product, @AncestorInPath @Nullable final Item item) {
+    public ListBoxModel doFillEngagementIdItems(@QueryParameter final String defectDojoUrl, @QueryParameter final String defectDojoApiKey, @QueryParameter("productId") String productId, @AncestorInPath @Nullable final Item item) {
         final ListBoxModel engagements = new ListBoxModel();
         try {
             // url may come from instance-config. if empty, then take it from global config (this)
@@ -185,12 +185,14 @@ public class DescriptorImpl extends BuildStepDescriptor<Publisher> implements Se
             // api-key may come from instance-config. if empty, then take it from global config (this)
             final String apiKey = lookupApiKey(Optional.ofNullable(StringUtils.trimToNull(defectDojoApiKey)).orElseGet(this::getDefectDojoApiKey), item);
             final ApiClient apiClient = getClient(url, apiKey);
-            final List<ListBoxModel.Option> options = apiClient.getEngagements(Integer.parseInt(product)).stream()
+            engagements.add(new ListBoxModel.Option(Messages.Publisher_EngagementList_Placeholder(), StringUtils.EMPTY));
+            if (!StringUtils.isBlank(productId)) {
+                final List<ListBoxModel.Option> options = apiClient.getEngagements(productId).stream()
                     .map(p -> new ListBoxModel.Option(p.getString("name"), p.getString("id")))
                     .sorted(Comparator.comparing(o -> o.name))
                     .collect(Collectors.toList());
-            engagements.add(new ListBoxModel.Option(Messages.Publisher_EngagementList_Placeholder(), StringUtils.EMPTY));
-            engagements.addAll(options);
+                engagements.addAll(options);
+            }
         } catch (ApiClientException e) {
             engagements.add(Messages.Builder_Error_Products(e.getLocalizedMessage()), StringUtils.EMPTY);
         }

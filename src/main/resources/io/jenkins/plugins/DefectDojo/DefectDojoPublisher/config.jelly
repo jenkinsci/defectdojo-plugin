@@ -21,8 +21,8 @@ limitations under the License.
         </f:entry>
 
         <j:if test="${instance != null ? instance.isEffectiveAutoCreateProducts() : descriptor.isDefectDojoAutoCreateProducts()}">
-        <f:entry title="${%productName}" field="projectName">
-            <f:textbox id="projectName"/>
+        <f:entry title="${%productName}" field="productName">
+            <f:textbox id="productName"/>
         </f:entry>
         </j:if>
 

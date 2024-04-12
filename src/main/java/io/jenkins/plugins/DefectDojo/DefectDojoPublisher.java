@@ -33,7 +33,6 @@ import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Setter;
 import org.apache.commons.lang.StringUtils;
-import io.jenkins.plugins.DefectDojo.Messages;
 import org.jenkinsci.plugins.plaincredentials.StringCredentials;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.DataBoundSetter;
@@ -174,7 +173,7 @@ public final class DefectDojoPublisher extends Recorder implements SimpleBuildSt
         final String effectiveBranchTag = env.expand(branchTag);
         final String effectiveArtifact = env.expand(artifact);
         final String effectiveScanType = env.expand(scanType);
-        // final boolean effectiveAutoCreateProduct = isEffectiveAutoCreateProducts();
+        final boolean effectiveAutoCreateProduct = isEffectiveAutoCreateProducts();
         final boolean effectiveAutoCreateEngagement = isEffectiveAutoCreateEngagements();
         final boolean effectiveReupload = isEffectiveReuploadScan();
         projectIdCache = null;
@@ -204,11 +203,16 @@ public final class DefectDojoPublisher extends Recorder implements SimpleBuildSt
 
         final String effectiveUrl = getEffectiveUrl();
         final String effectiveApiKey = getEffectiveApiKey(run);
-        logger.log(Messages.Builder_Publishing(effectiveUrl));
         final ApiClient apiClient = clientFactory.create(effectiveUrl, effectiveApiKey, logger, getEffectiveConnectionTimeout(), getEffectiveReadTimeout());
 
-        if (!isEffectiveAutoCreateProducts() && !StringUtils.isBlank(productName) && StringUtils.isBlank(productId)) {
+        if (!effectiveAutoCreateProduct && StringUtils.isNotBlank(effectiveProductName) && StringUtils.isBlank(productId)) {
+            logger.log(Messages.Builder_Fetching(effectiveProductName));
             productId = apiClient.getProductId(effectiveProductName);
+        }
+
+        if (effectiveAutoCreateProduct && StringUtils.isBlank(productId) && StringUtils.isNotBlank(effectiveProductName)) {
+            logger.log(Messages.Builder_Publishing_Product(effectiveProductName));
+            productId = apiClient.createProduct(effectiveProductName, null);
         }
         
         if (StringUtils.isBlank(productId)) {
@@ -216,20 +220,21 @@ public final class DefectDojoPublisher extends Recorder implements SimpleBuildSt
             throw new AbortException(Messages.Builder_Result_ProductIdMissing());
         }
 
-        if (!isEffectiveAutoCreateEngagements() && !StringUtils.isBlank(engagementName) && StringUtils.isBlank(engagementId)) {
+        if (effectiveAutoCreateEngagement && StringUtils.isNotBlank(effectiveEngagementName) && StringUtils.isBlank(engagementId)) {
+            logger.log(Messages.Builder_Fetching(effectiveEngagementName));
             engagementId = apiClient.getEngagementId(productId, effectiveEngagementName);
+        }
+
+        if (effectiveAutoCreateEngagement && StringUtils.isNotBlank(effectiveEngagementName) && StringUtils.isBlank(engagementId)) {
+            engagementId = apiClient.createEngagement(effectiveEngagementName, productId, effectiveSourceCodeUrl);
         }
         
         if(StringUtils.isBlank(engagementId)) {
             logger.log(Messages.Builder_Result_EngagementIdMissing());
             throw new AbortException(Messages.Builder_Result_EngagementIdMissing());
         }
-        
-        if (StringUtils.isNotBlank(effectiveEngagementName) && effectiveAutoCreateEngagement) {
-            engagementId = apiClient.createEngagement(effectiveEngagementName, productId, effectiveSourceCodeUrl);
-        }
 
-        
+        logger.log(Messages.Builder_Publishing(effectiveUrl));
         final boolean uploadResult = apiClient.upload(productId, engagementId, effectiveSourceCodeUrl, 
                     effectiveBranchTag, effectiveCommitHash, artifactFilePath, scanType, effectiveReupload);
 

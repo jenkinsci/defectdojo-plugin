@@ -16,7 +16,6 @@ To setup, navigate to Jenkins > System Configuration and complete the DefectDojo
 **API key**: API Key used for authentication.
 
 
-`Not yet implemented`
 **Auto Create Products**: auto creation of products by giving a product name.
 
 **Auto Create Engagements**: auto creation of products by giving a product name.
