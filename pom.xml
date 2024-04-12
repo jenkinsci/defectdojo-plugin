@@ -208,15 +208,10 @@
                     <pushChanges>false</pushChanges>
                     <localCheckout>true</localCheckout>
                     <tagNameFormat>v@{project.version}</tagNameFormat>
-                    <preparationGoals>clean sync-packagejson-version:sync scm:checkin verify</preparationGoals>
-                    <completionGoals>sync-packagejson-version:sync scm:checkin</completionGoals>
+                    <preparationGoals>clean scm:checkin verify</preparationGoals>
+                    <completionGoals>scm:checkin</completionGoals>
                 </configuration>
-            </plugin>
-            <plugin>
-                <groupId>de.ingogriebsch.maven</groupId>
-                <artifactId>sync-packagejson-version-maven-plugin</artifactId>
-                <version>1.3.0</version>
-            </plugin>
+            </plugin> 
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-enforcer-plugin</artifactId>
