@@ -206,7 +206,7 @@ public final class DefectDojoPublisher extends Recorder implements SimpleBuildSt
         final ApiClient apiClient = clientFactory.create(effectiveUrl, effectiveApiKey, logger, getEffectiveConnectionTimeout(), getEffectiveReadTimeout());
 
         if (!effectiveAutoCreateProduct && StringUtils.isNotBlank(effectiveProductName) && StringUtils.isBlank(productId)) {
-            logger.log(Messages.Builder_Fetching(effectiveProductName));
+            logger.log(Messages.Builder_Fetching_Product(effectiveProductName));
             productId = apiClient.getProductId(effectiveProductName);
         }
 
@@ -221,11 +221,12 @@ public final class DefectDojoPublisher extends Recorder implements SimpleBuildSt
         }
 
         if (effectiveAutoCreateEngagement && StringUtils.isNotBlank(effectiveEngagementName) && StringUtils.isBlank(engagementId)) {
-            logger.log(Messages.Builder_Fetching(effectiveEngagementName));
+            logger.log(Messages.Builder_Fetching_Engagement(effectiveEngagementName));
             engagementId = apiClient.getEngagementId(productId, effectiveEngagementName);
         }
 
         if (effectiveAutoCreateEngagement && StringUtils.isNotBlank(effectiveEngagementName) && StringUtils.isBlank(engagementId)) {
+            logger.log(Messages.Builder_Publishing_Engagement(effectiveProductName, effectiveEngagementName));
             engagementId = apiClient.createEngagement(effectiveEngagementName, productId, effectiveSourceCodeUrl);
         }
         
