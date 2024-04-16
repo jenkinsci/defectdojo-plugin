@@ -13,8 +13,10 @@
  */
 package io.jenkins.plugins.DefectDojo;
 
+import hudson.util.Secret;
+
 @FunctionalInterface
 interface ApiClientFactory {
 
-    ApiClient create(final String baseUrl, final String apiKey, final ConsoleLogger logger, final int connectionTimeout, final int readTimeout);
+    ApiClient create(final String baseUrl, final Secret apiKey, final ConsoleLogger logger, final int connectionTimeout, final int readTimeout);
 }

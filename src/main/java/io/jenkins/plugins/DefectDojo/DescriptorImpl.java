@@ -153,7 +153,7 @@ public class DescriptorImpl extends BuildStepDescriptor<Publisher> implements Se
             // url may come from instance-config. if empty, then take it from global config (this)
             final String url = Optional.ofNullable(PluginUtil.parseBaseUrl(defectDojoUrl)).orElseGet(this::getDefectDojoUrl);
             // api-key may come from instance-config. if empty, then take it from global config (this)
-            final String apiKey = lookupApiKey(Optional.ofNullable(StringUtils.trimToNull(defectDojoApiKey)).orElseGet(this::getDefectDojoApiKey), item);
+            final Secret apiKey = lookupApiKey(Optional.ofNullable(StringUtils.trimToNull(defectDojoApiKey)).orElseGet(this::getDefectDojoApiKey), item);
             final ApiClient apiClient = getClient(url, apiKey);
             final List<ListBoxModel.Option> options = apiClient.getProducts().stream()
                     .map(p -> new ListBoxModel.Option(p.getString("name"), p.getString("id")))
@@ -183,7 +183,7 @@ public class DescriptorImpl extends BuildStepDescriptor<Publisher> implements Se
             // url may come from instance-config. if empty, then take it from global config (this)
             final String url = Optional.ofNullable(PluginUtil.parseBaseUrl(defectDojoUrl)).orElseGet(this::getDefectDojoUrl);
             // api-key may come from instance-config. if empty, then take it from global config (this)
-            final String apiKey = lookupApiKey(Optional.ofNullable(StringUtils.trimToNull(defectDojoApiKey)).orElseGet(this::getDefectDojoApiKey), item);
+            final Secret apiKey = lookupApiKey(Optional.ofNullable(StringUtils.trimToNull(defectDojoApiKey)).orElseGet(this::getDefectDojoApiKey), item);
             final ApiClient apiClient = getClient(url, apiKey);
             engagements.add(new ListBoxModel.Option(Messages.Publisher_EngagementList_Placeholder(), StringUtils.EMPTY));
             if (!StringUtils.isBlank(productId)) {
@@ -215,7 +215,7 @@ public class DescriptorImpl extends BuildStepDescriptor<Publisher> implements Se
             // url may come from instance-config. if empty, then take it from global config (this)
             final String url = Optional.ofNullable(PluginUtil.parseBaseUrl(defectDojoUrl)).orElseGet(this::getDefectDojoUrl);
             // api-key may come from instance-config. if empty, then take it from global config (this)
-            final String apiKey = lookupApiKey(Optional.ofNullable(StringUtils.trimToNull(defectDojoApiKey)).orElseGet(this::getDefectDojoApiKey), item);
+            final Secret apiKey = lookupApiKey(Optional.ofNullable(StringUtils.trimToNull(defectDojoApiKey)).orElseGet(this::getDefectDojoApiKey), item);
             final ApiClient apiClient = getClient(url, apiKey);
             final List<ListBoxModel.Option> options = apiClient.getScanTypes().stream()
                     .map(p -> new ListBoxModel.Option(p.getString("name")))
@@ -298,8 +298,8 @@ public class DescriptorImpl extends BuildStepDescriptor<Publisher> implements Se
         // url may come from instance-config. if empty, then take it from global config (this)
         final String url = Optional.ofNullable(PluginUtil.parseBaseUrl(defectDojoUrl)).orElseGet(this::getDefectDojoUrl);
         // api-key may come from instance-config. if empty, then take it from global config (this)
-        final String apiKey = lookupApiKey(Optional.ofNullable(StringUtils.trimToNull(defectDojoApiKey)).orElseGet(this::getDefectDojoApiKey), item);
-        if (doCheckDefectDojoUrl(url, item).kind == formValid && StringUtils.isNotBlank(apiKey)) {
+        final Secret apiKey = lookupApiKey(Optional.ofNullable(StringUtils.trimToNull(defectDojoApiKey)).orElseGet(this::getDefectDojoApiKey), item);
+        if (doCheckDefectDojoUrl(url, item).kind == formValid && apiKey != null) {
             try {
                 final ApiClient apiClient = getClient(url, apiKey);
                 final boolean status = apiClient.testConnection();
@@ -337,15 +337,14 @@ public class DescriptorImpl extends BuildStepDescriptor<Publisher> implements Se
         return PluginUtil.parseBaseUrl(defectDojoUrl);
     }
 
-    private ApiClient getClient(final String baseUrl, final String apiKey) {
+    private ApiClient getClient(final String baseUrl, final Secret apiKey) {
         return clientFactory.create(baseUrl, apiKey, new ConsoleLogger(), Math.max(defectDojoConnectionTimeout, 0), Math.max(defectDojoReadTimeout, 0));
     }
 
-    private String lookupApiKey(final String credentialId, final Item item) {
+    private Secret lookupApiKey(final String credentialId, final Item item) {
         return CredentialsProvider.lookupCredentialsInItem(StringCredentials.class, item, ACL.SYSTEM2, List.of()).stream()
                 .filter(c -> c.getId().equals(credentialId))
                 .map(StringCredentials::getSecret)
-                .map(Secret::getPlainText)
-                .findFirst().orElse(StringUtils.EMPTY);
+                .findFirst().orElse(null);
     }
 }

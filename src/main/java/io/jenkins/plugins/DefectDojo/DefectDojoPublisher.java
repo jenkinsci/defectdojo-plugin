@@ -202,7 +202,7 @@ public final class DefectDojoPublisher extends Recorder implements SimpleBuildSt
         }
 
         final String effectiveUrl = getEffectiveUrl();
-        final String effectiveApiKey = getEffectiveApiKey(run);
+        final Secret effectiveApiKey = getEffectiveApiKey(run);
         final ApiClient apiClient = clientFactory.create(effectiveUrl, effectiveApiKey, logger, getEffectiveConnectionTimeout(), getEffectiveReadTimeout());
 
         if (!effectiveAutoCreateProduct && StringUtils.isNotBlank(effectiveProductName) && StringUtils.isBlank(productId)) {
@@ -318,14 +318,13 @@ public final class DefectDojoPublisher extends Recorder implements SimpleBuildSt
      * @param run needed for credential retrieval
      * @return effective api-key
      */
-    @NonNull
-    private String getEffectiveApiKey(final @NonNull Run<?, ?> run) {
+    private Secret getEffectiveApiKey(final @NonNull Run<?, ?> run) {
         final String credId = Optional.ofNullable(StringUtils.trimToNull(defectDojoApiKey)).orElseGet(descriptor::getDefectDojoApiKey);
         if (credId != null) {
             StringCredentials cred = CredentialsProvider.findCredentialById(credId, StringCredentials.class, run);
-            return Optional.ofNullable(CredentialsProvider.track(run, cred)).map(StringCredentials::getSecret).map(Secret::getPlainText).orElse(credId);
+            return Optional.ofNullable(CredentialsProvider.track(run, cred)).map(StringCredentials::getSecret).orElse(null);
         } else {
-            return StringUtils.EMPTY;
+            return null;
         }
     }
 

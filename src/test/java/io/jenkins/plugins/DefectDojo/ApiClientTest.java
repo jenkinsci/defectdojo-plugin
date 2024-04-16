@@ -19,7 +19,6 @@ import io.netty.handler.codec.http.HttpResponseStatus;
 import java.io.IOException;
 import java.net.ConnectException;
 import okhttp3.OkHttpClient;
-
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -27,6 +26,7 @@ import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.junit.jupiter.WithJenkins;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import hudson.util.Secret;
 import reactor.core.publisher.Mono;
 import reactor.netty.DisposableServer;
 import reactor.netty.http.server.HttpServer;
@@ -49,7 +49,7 @@ import static org.mockito.Mockito.when;
 @WithJenkins
 class ApiClientTest {
 
-    private static final String API_KEY = "api-key";
+    private static final Secret API_KEY = Secret.fromString("api-key");
 
     private DisposableServer server;
 

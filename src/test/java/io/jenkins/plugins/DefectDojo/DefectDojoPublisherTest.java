@@ -65,14 +65,14 @@ class DefectDojoPublisherTest {
 
     private final ApiClientFactory clientFactory = (url, apiKey, logger, connTimeout, readTimeout) -> client;
     private final String apikeyId = "api-key-id";
-    private final String apikey = "api-key";
+    private final Secret apikey = Secret.fromString("api-key");
     private final String scanType = "s-type";
 
     @BeforeEach
     void setup(JenkinsRule r) throws ApiClientException, IOException {
         when(listener.getLogger()).thenReturn(System.err);
 
-        CredentialsProvider.lookupStores(r.jenkins).iterator().next().addCredentials(Domain.global(), new StringCredentialsImpl(CredentialsScope.GLOBAL, apikeyId, "DefectDojoPublisherTest", Secret.fromString(apikey)));
+        CredentialsProvider.lookupStores(r.jenkins).iterator().next().addCredentials(Domain.global(), new StringCredentialsImpl(CredentialsScope.GLOBAL, apikeyId, "DefectDojoPublisherTest", apikey));
 
         // needed for credential tracking
         when(job.getParent()).thenReturn(r.jenkins);

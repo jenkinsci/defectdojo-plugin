@@ -17,6 +17,7 @@ import edu.umd.cs.findbugs.annotations.NonNull;
 import edu.umd.cs.findbugs.annotations.Nullable;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.FilePath;
+import hudson.util.Secret;
 import io.jenkins.plugins.okhttp.api.JenkinsOkHttpClient;
 import java.io.File;
 import java.io.IOException;
@@ -79,7 +80,7 @@ public class ApiClient {
     /**
      * the api key to authorize with against DT
      */
-    private final String apiKey;
+    private final Secret apiKey;
 
     private final ConsoleLogger logger;
     private final OkHttpClient httpClient;
@@ -94,14 +95,14 @@ public class ApiClient {
      * to DT
      * @param readTimeout the read-timeout in seconds for every call to DT
      */
-    public ApiClient(@NonNull final String baseUrl, @NonNull final String apiKey, @NonNull final ConsoleLogger logger, final int connectionTimeout, final int readTimeout) {
+    public ApiClient(@NonNull final String baseUrl, @NonNull final Secret apiKey, @NonNull final ConsoleLogger logger, final int connectionTimeout, final int readTimeout) {
         this(baseUrl, apiKey, logger, () -> JenkinsOkHttpClient.newClientBuilder(new OkHttpClient())
                 .connectTimeout(Duration.ofSeconds(connectionTimeout))
                 .readTimeout(Duration.ofSeconds(readTimeout))
                 .build());
     }
 
-    ApiClient(@NonNull final String baseUrl, @NonNull final String apiKey, @NonNull final ConsoleLogger logger, @NonNull final HttpClientFactory factory) {
+    ApiClient(@NonNull final String baseUrl, @NonNull final Secret apiKey, @NonNull final ConsoleLogger logger, @NonNull final HttpClientFactory factory) {
         this.baseUrl = baseUrl;
         this.apiKey = apiKey;
         this.logger = logger;
@@ -109,8 +110,8 @@ public class ApiClient {
     }
 
     @NonNull
+    @RequirePOST
     @SuppressFBWarnings("NP_NULL_ON_SOME_PATH_FROM_RETURN_VALUE")
-    @SuppressWarnings("lgtm[jenkins/credentials-fill-without-permission-check]")
     public boolean testConnection() throws ApiClientException {
         final var request = createRequest(URI.create(PRODUCT_URL));
         return executeWithRetry(() -> {
@@ -168,8 +169,8 @@ public class ApiClient {
     }
 
     @NonNull
+    @RequirePOST
     @SuppressFBWarnings("NP_NULL_ON_SOME_PATH_FROM_RETURN_VALUE")
-    @SuppressWarnings({"deprecation","lgtm[jenkins/credentials-fill-without-permission-check]"})
     public Boolean upload(final String projectId, final String engagementId, @Nullable final String sourceCodeUri, @Nullable String branchTag, @Nullable String commitHash,
             @NonNull final FilePath artifact, @NonNull final String scanType, boolean reuploadScan) throws IOException, InterruptedException {
         if (!artifact.exists()) {
@@ -419,7 +420,7 @@ public class ApiClient {
     private Request createRequest(final URI uri, final String method, final RequestBody bodyPublisher) {
         return new Request.Builder()
                 .url(baseUrl + uri)
-                .addHeader(API_KEY_HEADER, "Token " + apiKey)
+                .addHeader(API_KEY_HEADER, "Token " + apiKey.getPlainText())
                 .addHeader(ACCEPT, APPLICATION_JSON_VALUE)
                 .method(method, bodyPublisher)
                 .build();
