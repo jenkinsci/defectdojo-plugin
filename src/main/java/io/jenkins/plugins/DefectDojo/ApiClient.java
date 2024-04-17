@@ -110,7 +110,6 @@ public class ApiClient {
     }
 
     @NonNull
-    @RequirePOST
     @SuppressFBWarnings("NP_NULL_ON_SOME_PATH_FROM_RETURN_VALUE")
     public boolean testConnection() throws ApiClientException {
         final var request = createRequest(URI.create(PRODUCT_URL));
@@ -169,7 +168,6 @@ public class ApiClient {
     }
 
     @NonNull
-    @RequirePOST
     @SuppressFBWarnings("NP_NULL_ON_SOME_PATH_FROM_RETURN_VALUE")
     public Boolean upload(final String projectId, final String engagementId, @Nullable final String sourceCodeUri, @Nullable String branchTag, @Nullable String commitHash,
             @NonNull final FilePath artifact, @NonNull final String scanType, boolean reuploadScan) throws IOException, InterruptedException {
@@ -246,7 +244,6 @@ public class ApiClient {
 
     }
 
-    @RequirePOST
     public String createEngagement(String engagementName, String productId, @Nullable String sourceCodeUrl) throws IOException {
         final String defaultValues = "{\"description\": \"Auto-created via Jenkins\",\"engagement_type\":\"Interactive\",\"status\": \"In Progress\",\"deduplication_on_engagement\": \"true\"}";
         JSONObject jsonBody = JSONObject.fromObject(defaultValues);
@@ -287,7 +284,6 @@ public class ApiClient {
         });
     }
 
-    @RequirePOST
     public String createProduct(String productName, @Nullable String origin) throws IOException {
         final String defaultValues = "{\"description\": \"Auto-created via Jenkins\",\"prod_type\":\"1\"}";
         JSONObject jsonBody = JSONObject.fromObject(defaultValues);
@@ -438,11 +434,11 @@ public class ApiClient {
         template.setBackOffPolicy(backOffPolicy);
         template.setRetryPolicy(retryPolicy);
 
-        return template.execute(ctx -> action.doWithRetry());
+        return template.execute(ctx -> action.executeWithRetry());
     }
 
     private interface RetryAction<T, E extends IOException> {
 
-        T doWithRetry() throws E;
+        T executeWithRetry() throws E;
     }
 }
