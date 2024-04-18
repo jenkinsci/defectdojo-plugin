@@ -35,7 +35,6 @@ import okhttp3.Request;
 import okhttp3.MultipartBody;
 import okhttp3.RequestBody;
 import org.apache.commons.lang.StringUtils;
-import org.kohsuke.stapler.interceptor.RequirePOST;
 import org.springframework.http.HttpStatus;
 import org.springframework.retry.RetryPolicy;
 import org.springframework.retry.backoff.UniformRandomBackOffPolicy;
@@ -337,7 +336,6 @@ public class ApiClient {
 
     @NonNull
     @SuppressFBWarnings("NP_NULL_ON_SOME_PATH_FROM_RETURN_VALUE")
-    @SuppressWarnings("lgtm[jenkins/credentials-fill-without-permission-check]")
     private List<Object> getPaged(final int offset, final int limit, final String URL) throws ApiClientException {
         final var uri = UriComponentsBuilder.fromUriString(URL)
                 .queryParam("limit", "{limit}")
@@ -349,7 +347,7 @@ public class ApiClient {
                 if (response.isSuccessful()) {
                     return getRequestResult(response.body().string());
                 }
-                return List.of();
+                return new JSONArray();
             } catch (IOException e) {
                 throw new ApiClientException(Messages.ApiClient_Error_Connection(StringUtils.EMPTY, StringUtils.EMPTY), e);
             }
@@ -366,7 +364,6 @@ public class ApiClient {
         return getIdFromDojo(createRequest(uri));
     }
 
-    @SuppressWarnings("lgtm[jenkins/credentials-fill-without-permission-check]")
     private String getIdFromDojo(final Request request) throws ApiClientException {
         return executeWithRetry(() -> {
             try (var response = httpClient.newCall(request).execute()) {
