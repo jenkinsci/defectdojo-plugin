@@ -76,7 +76,7 @@ public class DescriptorImpl extends BuildStepDescriptor<Publisher> implements Se
      */
     @Getter(onMethod_ = {@CheckForNull})
     @Setter(onMethod_ = {@DataBoundSetter})
-    private String defectDojoApiKey;
+    private String defectDojoCredentialsId;
 
     /**
      * Specifies whether the API key provided has the PRODUCT_CREATION_UPLOAD
@@ -141,19 +141,18 @@ public class DescriptorImpl extends BuildStepDescriptor<Publisher> implements Se
      * Retrieve the projects to populate the dropdown.
      *
      * @param defectDojoUrl the base URL to DefectDojo
-     * @param defectDojoApiKey the API key to use for authentication
+     * @param defectDojoCredentialsId the API key to use for authentication
      * @param item used to lookup credentials in job config. ignored in global
      * @return ListBoxModel
      */
     @POST
-    @SuppressWarnings("lgtm[jenkins/credentials-fill-without-permission-check]")
-    public ListBoxModel doFillProductIdItems(@QueryParameter final String defectDojoUrl, @QueryParameter final String defectDojoApiKey, @AncestorInPath @Nullable final Item item) {
+    public ListBoxModel doFillProductIdItems(@QueryParameter final String defectDojoUrl, @QueryParameter final String defectDojoCredentialsId, @AncestorInPath @Nullable final Item item) {
         final ListBoxModel projects = new ListBoxModel();
         try {
             // url may come from instance-config. if empty, then take it from global config (this)
             final String url = Optional.ofNullable(PluginUtil.parseBaseUrl(defectDojoUrl)).orElseGet(this::getDefectDojoUrl);
             // api-key may come from instance-config. if empty, then take it from global config (this)
-            final Secret apiKey = lookupApiKey(Optional.ofNullable(StringUtils.trimToNull(defectDojoApiKey)).orElseGet(this::getDefectDojoApiKey), item);
+            final Secret apiKey = lookupApiKey(Optional.ofNullable(StringUtils.trimToNull(defectDojoCredentialsId)).orElseGet(this::getDefectDojoCredentialsId), item);
             final ApiClient apiClient = getClient(url, apiKey);
             final List<ListBoxModel.Option> options = apiClient.getProducts().stream()
                     .map(p -> new ListBoxModel.Option(p.getString("name"), p.getString("id")))
@@ -171,19 +170,18 @@ public class DescriptorImpl extends BuildStepDescriptor<Publisher> implements Se
      * Retrieve the projects to populate the dropdown.
      *
      * @param defectDojoUrl the base URL to DefectDojo
-     * @param defectDojoApiKey the API key to use for authentication
+     * @param defectDojoCredentialsId the API key to use for authentication
      * @param item used to lookup credentials in job config. ignored in global
      * @return ListBoxModel
      */
     @POST
-    @SuppressWarnings("lgtm[jenkins/credentials-fill-without-permission-check]")
-    public ListBoxModel doFillEngagementIdItems(@QueryParameter final String defectDojoUrl, @QueryParameter final String defectDojoApiKey, @QueryParameter("productId") String productId, @AncestorInPath @Nullable final Item item) {
+    public ListBoxModel doFillEngagementIdItems(@QueryParameter final String defectDojoUrl, @QueryParameter final String defectDojoCredentialsId, @QueryParameter("productId") String productId, @AncestorInPath @Nullable final Item item) {        
         final ListBoxModel engagements = new ListBoxModel();
         try {
             // url may come from instance-config. if empty, then take it from global config (this)
             final String url = Optional.ofNullable(PluginUtil.parseBaseUrl(defectDojoUrl)).orElseGet(this::getDefectDojoUrl);
             // api-key may come from instance-config. if empty, then take it from global config (this)
-            final Secret apiKey = lookupApiKey(Optional.ofNullable(StringUtils.trimToNull(defectDojoApiKey)).orElseGet(this::getDefectDojoApiKey), item);
+            final Secret apiKey = lookupApiKey(Optional.ofNullable(StringUtils.trimToNull(defectDojoCredentialsId)).orElseGet(this::getDefectDojoCredentialsId), item);
             final ApiClient apiClient = getClient(url, apiKey);
             engagements.add(new ListBoxModel.Option(Messages.Publisher_EngagementList_Placeholder(), StringUtils.EMPTY));
             if (!StringUtils.isBlank(productId)) {
@@ -203,19 +201,18 @@ public class DescriptorImpl extends BuildStepDescriptor<Publisher> implements Se
      * Retrieve the projects to populate the dropdown.
      *
      * @param defectDojoUrl the base URL to DefectDojo
-     * @param defectDojoApiKey the API key to use for authentication
+     * @param defectDojoCredentialsId the API key to use for authentication
      * @param item used to lookup credentials in job config. ignored in global
      * @return ListBoxModel
      */
     @POST
-    @SuppressWarnings("lgtm[jenkins/credentials-fill-without-permission-check]")
-    public ListBoxModel doFillScanTypeItems(@QueryParameter final String defectDojoUrl, @QueryParameter final String defectDojoApiKey, @AncestorInPath @Nullable final Item item) {
+    public ListBoxModel doFillScanTypeItems(@QueryParameter final String defectDojoUrl, @QueryParameter final String defectDojoCredentialsId, @AncestorInPath @Nullable final Item item) {        
         final ListBoxModel projects = new ListBoxModel();
         try {
             // url may come from instance-config. if empty, then take it from global config (this)
             final String url = Optional.ofNullable(PluginUtil.parseBaseUrl(defectDojoUrl)).orElseGet(this::getDefectDojoUrl);
             // api-key may come from instance-config. if empty, then take it from global config (this)
-            final Secret apiKey = lookupApiKey(Optional.ofNullable(StringUtils.trimToNull(defectDojoApiKey)).orElseGet(this::getDefectDojoApiKey), item);
+            final Secret apiKey = lookupApiKey(Optional.ofNullable(StringUtils.trimToNull(defectDojoCredentialsId)).orElseGet(this::getDefectDojoCredentialsId), item);
             final ApiClient apiClient = getClient(url, apiKey);
             final List<ListBoxModel.Option> options = apiClient.getScanTypes().stream()
                     .map(p -> new ListBoxModel.Option(p.getString("name")))
@@ -230,8 +227,7 @@ public class DescriptorImpl extends BuildStepDescriptor<Publisher> implements Se
     }
 
     @POST
-    @SuppressWarnings("lgtm[jenkins/credentials-fill-without-permission-check]")
-    public ListBoxModel doFillDefectDojoApiKeyItems(@QueryParameter final String credentialsId, @AncestorInPath final Item item) {
+    public ListBoxModel doFillDefectDojoCredentialsIdItems(@QueryParameter final String credentialsId, @AncestorInPath final Item item) {
         StandardListBoxModel result = new StandardListBoxModel();
         if (item == null) {
             if (!Jenkins.get().hasPermission(Jenkins.ADMINISTER)) {
@@ -266,13 +262,13 @@ public class DescriptorImpl extends BuildStepDescriptor<Publisher> implements Se
     }
 
     @POST
-    public FormValidation doTestConnectionGlobal(@QueryParameter final String defectDojoUrl, @QueryParameter final String defectDojoApiKey, @AncestorInPath @Nullable Item item) {
-        return testConnection(defectDojoUrl, defectDojoApiKey, item);
+    public FormValidation doTestConnectionGlobal(@QueryParameter final String defectDojoUrl, @QueryParameter final String defectDojoCredentialsId, @AncestorInPath @Nullable Item item) {
+        return testConnection(defectDojoUrl, defectDojoCredentialsId, item);
     }
 
     @POST
-    public FormValidation doTestConnectionJob(@QueryParameter final String defectDojoUrl, @QueryParameter final String defectDojoApiKey, @AncestorInPath @Nullable Item item) {
-        return testConnection(defectDojoUrl, defectDojoApiKey, item);
+    public FormValidation doTestConnectionJob(@QueryParameter final String defectDojoUrl, @QueryParameter final String defectDojoCredentialsId, @AncestorInPath @Nullable Item item) {
+        return testConnection(defectDojoUrl, defectDojoCredentialsId, item);
     }
 
     /**
@@ -281,14 +277,14 @@ public class DescriptorImpl extends BuildStepDescriptor<Publisher> implements Se
      * response code.
      *
      * @param defectDojoUrl the base URL to DefectDojo
-     * @param defectDojoApiKey the credential-id of the API key to use for
+     * @param defectDojoCredentialsId the credential-id of the API key to use for
      * authentication
      * @param autoCreateProducts if auto-create projects is enabled or not
      * @param synchronous if sync-mode is enabled or not
      * @param item used to check permission and lookup credentials
      * @return FormValidation
      */
-    private FormValidation testConnection(final String defectDojoUrl, final String defectDojoApiKey, @AncestorInPath @Nullable Item item) {
+    private FormValidation testConnection(final String defectDojoUrl, final String defectDojoCredentialsId, @AncestorInPath @Nullable Item item) {
         if (item == null) {
             Jenkins.get().checkPermission(Jenkins.ADMINISTER);
         } else {
@@ -298,7 +294,7 @@ public class DescriptorImpl extends BuildStepDescriptor<Publisher> implements Se
         // url may come from instance-config. if empty, then take it from global config (this)
         final String url = Optional.ofNullable(PluginUtil.parseBaseUrl(defectDojoUrl)).orElseGet(this::getDefectDojoUrl);
         // api-key may come from instance-config. if empty, then take it from global config (this)
-        final Secret apiKey = lookupApiKey(Optional.ofNullable(StringUtils.trimToNull(defectDojoApiKey)).orElseGet(this::getDefectDojoApiKey), item);
+        final Secret apiKey = lookupApiKey(Optional.ofNullable(StringUtils.trimToNull(defectDojoCredentialsId)).orElseGet(this::getDefectDojoCredentialsId), item);
         if (doCheckDefectDojoUrl(url, item).kind == formValid && apiKey != null) {
             try {
                 final ApiClient apiClient = getClient(url, apiKey);
@@ -342,6 +338,11 @@ public class DescriptorImpl extends BuildStepDescriptor<Publisher> implements Se
     }
 
     private Secret lookupApiKey(final String credentialId, final Item item) {
+        if (item == null) {
+            Jenkins.get().checkPermission(CredentialsProvider.USE_ITEM);
+        } else {
+            item.checkPermission(CredentialsProvider.USE_ITEM);
+        }
         return CredentialsProvider.lookupCredentialsInItem(StringCredentials.class, item, ACL.SYSTEM2, List.of()).stream()
                 .filter(c -> c.getId().equals(credentialId))
                 .map(StringCredentials::getSecret)

@@ -25,7 +25,7 @@ public class ConfigurationAsCodeTest {
 
         assertThat(descriptor)
                 .returns("https://example.org/defectdojo", DescriptorImpl::getDefectDojoUrl)
-                .returns("R4nD0m", DescriptorImpl::getDefectDojoApiKey)
+                .returns("R4nD0m", DescriptorImpl::getDefectDojoCredentialsId)
                 .returns(false, DescriptorImpl::isDefectDojoAutoCreateProducts)
                 .returns(false, DescriptorImpl::isDefectDojoAutoCreateEngagements)
                 .returns(false, DescriptorImpl::isDefectDojoReuploadScan)

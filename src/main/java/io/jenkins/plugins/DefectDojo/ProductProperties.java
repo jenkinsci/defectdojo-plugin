@@ -43,15 +43,15 @@ public final class ProductProperties extends AbstractDescribableImpl<ProductProp
          * Retrieve the products to populate the dropdown.
          *
          * @param defectDojoUrl the base URL to DefectDojo
-         * @param defectDojoApiKey the API key to use for authentication
+         * @param defectDojoCredentialsId the API key to use for authentication
          * @param item used to lookup credentials in job config
          * @return ListBoxModel
          */
         @POST
-        @SuppressWarnings("lgtm[jenkins/credentials-fill-without-permission-check]")
-        public ListBoxModel doFillParentIdItems(@RelativePath("..") @QueryParameter final String defectDojoUrl, @RelativePath("..") @QueryParameter final String defectDojoApiKey, @AncestorInPath @Nullable final Item item) {
+        @SuppressWarnings("lgtm[jenkins/no-permission-check]")
+        public ListBoxModel doFillParentIdItems(@RelativePath("..") @QueryParameter final String defectDojoUrl, @RelativePath("..") @QueryParameter final String defectDojoCredentialsId, @AncestorInPath @Nullable final Item item) {
             io.jenkins.plugins.DefectDojo.DescriptorImpl pluginDescriptor = Jenkins.get().getDescriptorByType(io.jenkins.plugins.DefectDojo.DescriptorImpl.class);
-            return pluginDescriptor.doFillProductIdItems(defectDojoUrl, defectDojoApiKey, item);
+            return pluginDescriptor.doFillProductIdItems(defectDojoUrl, defectDojoCredentialsId, item);
         }
     }
 }

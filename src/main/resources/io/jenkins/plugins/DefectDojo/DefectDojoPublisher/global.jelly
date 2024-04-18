@@ -19,7 +19,7 @@ limitations under the License.
         <f:entry title="${%defectdojo.url}" field="defectDojoUrl">
             <f:textbox id="defectdojo.url" checkMethod="post" />
         </f:entry>
-        <f:entry title="${%defectdojo.apikey}" field="defectDojoApiKey">
+        <f:entry title="${%defectdojo.apikey}" field="defectDojoCredentialsId">
             <c:select id="defectdojo.apikey" />
         </f:entry>
         <f:entry title="${%defectdojo.autocreateproducts}" field="defectDojoAutoCreateProducts">
@@ -39,7 +39,7 @@ limitations under the License.
                 <f:number id="defectdojo.read.timeout" default="5" clazz="non-negative-number-required" min="0" />
             </f:entry>
         </f:advanced>
-        <f:validateButton title="${%defectdojo.connection.test}" progress="${%defectdojo.connection.testing}" method="testConnectionGlobal" with="defectDojoUrl,defectDojoApiKey" />
+        <f:validateButton title="${%defectdojo.connection.test}" progress="${%defectdojo.connection.testing}" method="testConnectionGlobal" with="defectDojoUrl,defectDojoCredentialsId" />
     </f:section>
 
 </j:jelly>

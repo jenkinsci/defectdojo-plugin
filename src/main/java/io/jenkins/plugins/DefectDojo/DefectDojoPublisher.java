@@ -98,7 +98,7 @@ public final class DefectDojoPublisher extends Recorder implements SimpleBuildSt
     /**
      * Specifies the credential-id for an API Key used for authentication.
      */
-    private String defectDojoApiKey;
+    private String defectDojoCredentialsId;
 
     /**
      * Specifies if reupload of scan results is enabled.
@@ -274,7 +274,7 @@ public final class DefectDojoPublisher extends Recorder implements SimpleBuildSt
         if (descriptor == null) {
             descriptor = getDescriptor();
         }
-        overrideGlobals = StringUtils.isNotBlank(defectDojoUrl) || StringUtils.isNotBlank(defectDojoApiKey) || autoCreateProducts != null;
+        overrideGlobals = StringUtils.isNotBlank(defectDojoUrl) || StringUtils.isNotBlank(defectDojoCredentialsId) || autoCreateProducts != null;
         return this;
     }
 
@@ -288,7 +288,7 @@ public final class DefectDojoPublisher extends Recorder implements SimpleBuildSt
     private Object writeReplace() throws java.io.ObjectStreamException {
         if (!overrideGlobals) {
             defectDojoUrl = null;
-            defectDojoApiKey = null;
+            defectDojoCredentialsId = null;
             autoCreateProducts = null;
             autoCreateEngagements = null;
             defectDojoConnectionTimeout = null;
@@ -319,7 +319,7 @@ public final class DefectDojoPublisher extends Recorder implements SimpleBuildSt
      * @return effective api-key
      */
     private Secret getEffectiveApiKey(final @NonNull Run<?, ?> run) {
-        final String credId = Optional.ofNullable(StringUtils.trimToNull(defectDojoApiKey)).orElseGet(descriptor::getDefectDojoApiKey);
+        final String credId = Optional.ofNullable(StringUtils.trimToNull(defectDojoCredentialsId)).orElseGet(descriptor::getDefectDojoCredentialsId);
         if (credId != null) {
             StringCredentials cred = CredentialsProvider.findCredentialById(credId, StringCredentials.class, run);
             return Optional.ofNullable(CredentialsProvider.track(run, cred)).map(StringCredentials::getSecret).orElse(null);

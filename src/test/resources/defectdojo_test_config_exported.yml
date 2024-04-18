@@ -1,7 +1,7 @@
-defectDojoApiKey: "R4nD0m"
 defectDojoAutoCreateEngagements: false
 defectDojoAutoCreateProducts: false
 defectDojoConnectionTimeout: 1
+defectDojoCredentialsId: "R4nD0m"
 defectDojoReadTimeout: 3
 defectDojoReuploadScan: false
 defectDojoUrl: "https://example.org/defectdojo"
