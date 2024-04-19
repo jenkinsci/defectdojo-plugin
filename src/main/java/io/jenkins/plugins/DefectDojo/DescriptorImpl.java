@@ -41,6 +41,7 @@ import net.sf.json.JSONObject;
 import org.apache.commons.lang.StringUtils;
 import org.jenkinsci.Symbol;
 import org.jenkinsci.plugins.plaincredentials.StringCredentials;
+import com.cloudbees.plugins.credentials.domains.DomainRequirement;
 import org.kohsuke.stapler.AncestorInPath;
 import org.kohsuke.stapler.DataBoundSetter;
 import org.kohsuke.stapler.QueryParameter;
@@ -240,7 +241,7 @@ public class DescriptorImpl extends BuildStepDescriptor<Publisher> implements Se
         }
         return result
                 .includeEmptyValue()
-                .includeAs(ACL.SYSTEM2, item, StringCredentials.class, List.of())
+                .includeAs(ACL.SYSTEM, item, StringCredentials.class, List.of())
                 .includeCurrentValue(credentialsId);
     }
 
@@ -343,7 +344,7 @@ public class DescriptorImpl extends BuildStepDescriptor<Publisher> implements Se
         } else {
             item.checkPermission(CredentialsProvider.USE_ITEM);
         }
-        return CredentialsProvider.lookupCredentialsInItem(StringCredentials.class, item, ACL.SYSTEM2, List.of()).stream()
+        return CredentialsProvider.lookupCredentials(StringCredentials.class, item, ACL.SYSTEM,  (DomainRequirement) null).stream()
                 .filter(c -> c.getId().equals(credentialId))
                 .map(StringCredentials::getSecret)
                 .findFirst().orElse(null);
