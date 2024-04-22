@@ -6,7 +6,7 @@
         <groupId>org.jenkins-ci.plugins</groupId>
         <artifactId>plugin</artifactId>
         <version>4.78</version>
-        <relativePath />
+        <relativePath/>
     </parent>
 
     <groupId>io.jenkins.plugins</groupId>
@@ -15,8 +15,7 @@
     <packaging>hpi</packaging>
 
     <name>DefectDojo Plugin</name>
-    <description>DefectDojo is a DevSecOps platform that allows organizations to automate the tools in use, combine findings, and apply templates for SLAs and mitigation—all tracked to the product or product groups defined . This plug-in can publish supported scan results.</description>
-    <url>https://github.com/eu-david/defectdojo-plugin</url>
+    <url>https://github.com/jenkinsci/defectdojo-plugin</url>
     <inceptionYear>2018</inceptionYear>
     <licenses>
         <license>
@@ -25,19 +24,11 @@
         </license>
     </licenses>
 
-    <developers>
-        <developer>
-            <name>Eugeniu David</name>
-            <id>eu-david</id>
-            <timezone>1</timezone>
-        </developer>
-    </developers>
-
     <scm>
-        <connection>scm:git:git@github.com:eu-david/defectdojo-plugin.git</connection>
-        <url>https://github.com/eu-david/defectdojo-plugin.git</url>
+        <connection>scm:git:https@github.com:jenkinsci/defectdojo-plugin.git</connection>
+        <url>https://github.com/jenkinsci/defectdojo-plugin.git</url>
         <developerConnection>scm:git:git@github.com:eu-david/defectdojo-plugin.git</developerConnection>
-        <tag>HEAD</tag>
+        <tag>${scmTag}</tag>
     </scm>
     <issueManagement>
         <system>GitHub Issues</system>
@@ -56,20 +47,15 @@
 
     <properties>
         <jenkins.version>2.426.3</jenkins.version>
-        <hpi.compatibleSinceVersion>3.0.0</hpi.compatibleSinceVersion>
-        <configuration-as-code.version>1775.v810dc950b_514</configuration-as-code.version>
-        <byte-buddy.version>1.14.12</byte-buddy.version>
-        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
-        <maven.javadoc.skip>true</maven.javadoc.skip>
+        <spotless.check.skip>false</spotless.check.skip>
     </properties>
 
     <dependencyManagement>
         <dependencies>
             <dependency>
                 <groupId>io.jenkins.tools.bom</groupId>
-                <artifactId>bom-2.387.x</artifactId>
-                <version>2401.v7a_d68f8d0b_09</version>
+                <artifactId>bom-2.426.x</artifactId>
+                <version>2571.vede9dc5a_2e23</version>
                 <type>pom</type>
                 <scope>import</scope>
             </dependency>
@@ -165,92 +151,6 @@
             <url>https://repo.jenkins-ci.org/public/</url>
         </pluginRepository>
     </pluginRepositories>
-
-    <build>
-        <plugins>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-compiler-plugin</artifactId>
-                <configuration>
-                    <showDeprecation>true</showDeprecation>
-                    <showWarnings>true</showWarnings>
-                    <compilerArgs>
-                        <arg>-Xlint:unchecked</arg>
-                    </compilerArgs>
-                </configuration>
-            </plugin>
-            <plugin>
-                <groupId>org.jacoco</groupId>
-                <artifactId>jacoco-maven-plugin</artifactId>
-                <executions>
-                    <execution>
-                        <id>default-prepare-agent</id>
-                        <goals>
-                            <goal>prepare-agent</goal>
-                        </goals>
-                    </execution>
-                    <execution>
-                        <id>default-report</id>
-                        <goals>
-                            <goal>report</goal>
-                        </goals>
-                    </execution>
-                </executions>
-            </plugin>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-enforcer-plugin</artifactId>
-                <executions>
-                    <execution>
-                        <id>display-info</id>
-                        <configuration>
-                            <rules>
-                                <requireUpperBoundDeps>
-                                    <excludes>
-                                        <exclude>com.google.code.findbugs:annotations</exclude>
-                                        <exclude>com.google.code.findbugs:jsr305</exclude>
-                                        <exclude>com.google.guava:guava</exclude>
-                                        <exclude>commons-logging:commons-logging</exclude>
-                                        <exclude>javax.servlet:javax.servlet-api</exclude>
-                                        <exclude>javax.servlet:servlet-api</exclude>
-                                        <exclude>net.java.dev.jna:jna</exclude>
-                                        <exclude>org.kohsuke:access-modifier-annotation</exclude>
-                                        <exclude>com.github.spotbugs:spotbugs-annotations</exclude>
-                                        <exclude>org.ow2.asm:asm</exclude>
-                                        <exclude>net.bytebuddy:byte-buddy</exclude>
-                                    </excludes>
-                                </requireUpperBoundDeps>
-                            </rules>
-                        </configuration>
-                    </execution>
-                </executions>
-            </plugin>
-            <plugin>
-                <artifactId>maven-surefire-plugin</artifactId>
-                <configuration>
-                    <statelessTestsetReporter implementation="org.apache.maven.plugin.surefire.extensions.junit5.JUnit5Xml30StatelessReporter">
-                        <disable>false</disable>
-                        <version>3.0</version>
-                        <usePhrasedFileName>false</usePhrasedFileName>
-                        <usePhrasedTestSuiteClassName>true</usePhrasedTestSuiteClassName>
-                        <usePhrasedTestCaseClassName>true</usePhrasedTestCaseClassName>
-                        <usePhrasedTestCaseMethodName>true</usePhrasedTestCaseMethodName>
-                    </statelessTestsetReporter>
-                    <consoleOutputReporter implementation="org.apache.maven.plugin.surefire.extensions.junit5.JUnit5ConsoleOutputReporter">
-                        <disable>false</disable>
-                        <encoding>${project.reporting.outputEncoding}</encoding>
-                        <usePhrasedFileName>false</usePhrasedFileName>
-                    </consoleOutputReporter>
-                    <statelessTestsetInfoReporter implementation="org.apache.maven.plugin.surefire.extensions.junit5.JUnit5StatelessTestsetInfoReporter">
-                        <disable>false</disable>
-                        <usePhrasedFileName>false</usePhrasedFileName>
-                        <usePhrasedClassNameInRunning>true</usePhrasedClassNameInRunning>
-                        <usePhrasedClassNameInTestCaseSummary>true</usePhrasedClassNameInTestCaseSummary>
-                    </statelessTestsetInfoReporter>
-                </configuration>
-            </plugin>
-        </plugins>
-    </build>
 
     <profiles>
         <profile>
