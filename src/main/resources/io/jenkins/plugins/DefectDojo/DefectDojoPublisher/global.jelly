@@ -13,7 +13,6 @@ limitations under the License.
 -->
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form" xmlns:c="/lib/credentials">
-    <link rel="stylesheet" href="${rootURL}/plugin/defectdojo/css/global.css" type="text/css" />
 
     <f:section title="DefectDojo">
         <f:entry title="${%defectdojo.url}" field="defectDojoUrl">
