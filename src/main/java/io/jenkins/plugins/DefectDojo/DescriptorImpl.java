@@ -15,6 +15,7 @@ package io.jenkins.plugins.DefectDojo;
 
 import com.cloudbees.plugins.credentials.CredentialsProvider;
 import com.cloudbees.plugins.credentials.common.StandardListBoxModel;
+import com.cloudbees.plugins.credentials.domains.DomainRequirement;
 import edu.umd.cs.findbugs.annotations.CheckForNull;
 import edu.umd.cs.findbugs.annotations.Nullable;
 import hudson.Extension;
@@ -41,7 +42,6 @@ import net.sf.json.JSONObject;
 import org.apache.commons.lang.StringUtils;
 import org.jenkinsci.Symbol;
 import org.jenkinsci.plugins.plaincredentials.StringCredentials;
-import com.cloudbees.plugins.credentials.domains.DomainRequirement;
 import org.kohsuke.stapler.AncestorInPath;
 import org.kohsuke.stapler.DataBoundSetter;
 import org.kohsuke.stapler.QueryParameter;
@@ -93,7 +93,7 @@ public class DescriptorImpl extends BuildStepDescriptor<Publisher> implements Se
      */
     @Getter
     @Setter(onMethod_ = {@DataBoundSetter})
-    private boolean defectDojoAutoCreateEngagements; 
+    private boolean defectDojoAutoCreateEngagements;
 
     /**
      * Specifies whether the API key provided has the ENGAGEMENT_CREATION_UPLOAD
@@ -147,13 +147,20 @@ public class DescriptorImpl extends BuildStepDescriptor<Publisher> implements Se
      * @return ListBoxModel
      */
     @POST
-    public ListBoxModel doFillProductIdItems(@QueryParameter final String defectDojoUrl, @QueryParameter final String defectDojoCredentialsId, @AncestorInPath @Nullable final Item item) {
+    public ListBoxModel doFillProductIdItems(
+            @QueryParameter final String defectDojoUrl,
+            @QueryParameter final String defectDojoCredentialsId,
+            @AncestorInPath @Nullable final Item item) {
         final ListBoxModel projects = new ListBoxModel();
         try {
             // url may come from instance-config. if empty, then take it from global config (this)
-            final String url = Optional.ofNullable(PluginUtil.parseBaseUrl(defectDojoUrl)).orElseGet(this::getDefectDojoUrl);
+            final String url =
+                    Optional.ofNullable(PluginUtil.parseBaseUrl(defectDojoUrl)).orElseGet(this::getDefectDojoUrl);
             // api-key may come from instance-config. if empty, then take it from global config (this)
-            final Secret apiKey = lookupApiKey(Optional.ofNullable(StringUtils.trimToNull(defectDojoCredentialsId)).orElseGet(this::getDefectDojoCredentialsId), item);
+            final Secret apiKey = lookupApiKey(
+                    Optional.ofNullable(StringUtils.trimToNull(defectDojoCredentialsId))
+                            .orElseGet(this::getDefectDojoCredentialsId),
+                    item);
             final ApiClient apiClient = getClient(url, apiKey);
             final List<ListBoxModel.Option> options = apiClient.getProducts().stream()
                     .map(p -> new ListBoxModel.Option(p.getString("name"), p.getString("id")))
@@ -167,7 +174,7 @@ public class DescriptorImpl extends BuildStepDescriptor<Publisher> implements Se
         return projects;
     }
 
-     /**
+    /**
      * Retrieve the projects to populate the dropdown.
      *
      * @param defectDojoUrl the base URL to DefectDojo
@@ -176,20 +183,29 @@ public class DescriptorImpl extends BuildStepDescriptor<Publisher> implements Se
      * @return ListBoxModel
      */
     @POST
-    public ListBoxModel doFillEngagementIdItems(@QueryParameter final String defectDojoUrl, @QueryParameter final String defectDojoCredentialsId, @QueryParameter("productId") String productId, @AncestorInPath @Nullable final Item item) {        
+    public ListBoxModel doFillEngagementIdItems(
+            @QueryParameter final String defectDojoUrl,
+            @QueryParameter final String defectDojoCredentialsId,
+            @QueryParameter("productId") String productId,
+            @AncestorInPath @Nullable final Item item) {
         final ListBoxModel engagements = new ListBoxModel();
         try {
             // url may come from instance-config. if empty, then take it from global config (this)
-            final String url = Optional.ofNullable(PluginUtil.parseBaseUrl(defectDojoUrl)).orElseGet(this::getDefectDojoUrl);
+            final String url =
+                    Optional.ofNullable(PluginUtil.parseBaseUrl(defectDojoUrl)).orElseGet(this::getDefectDojoUrl);
             // api-key may come from instance-config. if empty, then take it from global config (this)
-            final Secret apiKey = lookupApiKey(Optional.ofNullable(StringUtils.trimToNull(defectDojoCredentialsId)).orElseGet(this::getDefectDojoCredentialsId), item);
+            final Secret apiKey = lookupApiKey(
+                    Optional.ofNullable(StringUtils.trimToNull(defectDojoCredentialsId))
+                            .orElseGet(this::getDefectDojoCredentialsId),
+                    item);
             final ApiClient apiClient = getClient(url, apiKey);
-            engagements.add(new ListBoxModel.Option(Messages.Publisher_EngagementList_Placeholder(), StringUtils.EMPTY));
+            engagements.add(
+                    new ListBoxModel.Option(Messages.Publisher_EngagementList_Placeholder(), StringUtils.EMPTY));
             if (!StringUtils.isBlank(productId)) {
                 final List<ListBoxModel.Option> options = apiClient.getEngagements(productId).stream()
-                    .map(p -> new ListBoxModel.Option(p.getString("name"), p.getString("id")))
-                    .sorted(Comparator.comparing(o -> o.name))
-                    .collect(Collectors.toList());
+                        .map(p -> new ListBoxModel.Option(p.getString("name"), p.getString("id")))
+                        .sorted(Comparator.comparing(o -> o.name))
+                        .collect(Collectors.toList());
                 engagements.addAll(options);
             }
         } catch (ApiClientException e) {
@@ -207,13 +223,20 @@ public class DescriptorImpl extends BuildStepDescriptor<Publisher> implements Se
      * @return ListBoxModel
      */
     @POST
-    public ListBoxModel doFillScanTypeItems(@QueryParameter final String defectDojoUrl, @QueryParameter final String defectDojoCredentialsId, @AncestorInPath @Nullable final Item item) {        
+    public ListBoxModel doFillScanTypeItems(
+            @QueryParameter final String defectDojoUrl,
+            @QueryParameter final String defectDojoCredentialsId,
+            @AncestorInPath @Nullable final Item item) {
         final ListBoxModel projects = new ListBoxModel();
         try {
             // url may come from instance-config. if empty, then take it from global config (this)
-            final String url = Optional.ofNullable(PluginUtil.parseBaseUrl(defectDojoUrl)).orElseGet(this::getDefectDojoUrl);
+            final String url =
+                    Optional.ofNullable(PluginUtil.parseBaseUrl(defectDojoUrl)).orElseGet(this::getDefectDojoUrl);
             // api-key may come from instance-config. if empty, then take it from global config (this)
-            final Secret apiKey = lookupApiKey(Optional.ofNullable(StringUtils.trimToNull(defectDojoCredentialsId)).orElseGet(this::getDefectDojoCredentialsId), item);
+            final Secret apiKey = lookupApiKey(
+                    Optional.ofNullable(StringUtils.trimToNull(defectDojoCredentialsId))
+                            .orElseGet(this::getDefectDojoCredentialsId),
+                    item);
             final ApiClient apiClient = getClient(url, apiKey);
             final List<ListBoxModel.Option> options = apiClient.getScanTypes().stream()
                     .map(p -> new ListBoxModel.Option(p.getString("name")))
@@ -228,7 +251,8 @@ public class DescriptorImpl extends BuildStepDescriptor<Publisher> implements Se
     }
 
     @POST
-    public ListBoxModel doFillDefectDojoCredentialsIdItems(@QueryParameter final String credentialsId, @AncestorInPath final Item item) {
+    public ListBoxModel doFillDefectDojoCredentialsIdItems(
+            @QueryParameter final String credentialsId, @AncestorInPath final Item item) {
         StandardListBoxModel result = new StandardListBoxModel();
         if (item == null) {
             if (!Jenkins.get().hasPermission(Jenkins.ADMINISTER)) {
@@ -239,8 +263,7 @@ public class DescriptorImpl extends BuildStepDescriptor<Publisher> implements Se
                 return result.includeCurrentValue(credentialsId);
             }
         }
-        return result
-                .includeEmptyValue()
+        return result.includeEmptyValue()
                 .includeAs(ACL.SYSTEM, item, StringCredentials.class, List.of())
                 .includeCurrentValue(credentialsId);
     }
@@ -253,7 +276,8 @@ public class DescriptorImpl extends BuildStepDescriptor<Publisher> implements Se
      * @return a FormValidation object
      */
     @POST
-    public FormValidation doCheckDefectDojoUrl(@QueryParameter final String value, @AncestorInPath @Nullable final Item item) {
+    public FormValidation doCheckDefectDojoUrl(
+            @QueryParameter final String value, @AncestorInPath @Nullable final Item item) {
         if (item == null) {
             Jenkins.get().checkPermission(Jenkins.ADMINISTER);
         } else {
@@ -263,12 +287,18 @@ public class DescriptorImpl extends BuildStepDescriptor<Publisher> implements Se
     }
 
     @POST
-    public FormValidation doTestConnectionGlobal(@QueryParameter final String defectDojoUrl, @QueryParameter final String defectDojoCredentialsId, @AncestorInPath @Nullable Item item) {
+    public FormValidation doTestConnectionGlobal(
+            @QueryParameter final String defectDojoUrl,
+            @QueryParameter final String defectDojoCredentialsId,
+            @AncestorInPath @Nullable Item item) {
         return testConnection(defectDojoUrl, defectDojoCredentialsId, item);
     }
 
     @POST
-    public FormValidation doTestConnectionJob(@QueryParameter final String defectDojoUrl, @QueryParameter final String defectDojoCredentialsId, @AncestorInPath @Nullable Item item) {
+    public FormValidation doTestConnectionJob(
+            @QueryParameter final String defectDojoUrl,
+            @QueryParameter final String defectDojoCredentialsId,
+            @AncestorInPath @Nullable Item item) {
         return testConnection(defectDojoUrl, defectDojoCredentialsId, item);
     }
 
@@ -285,7 +315,8 @@ public class DescriptorImpl extends BuildStepDescriptor<Publisher> implements Se
      * @param item used to check permission and lookup credentials
      * @return FormValidation
      */
-    private FormValidation testConnection(final String defectDojoUrl, final String defectDojoCredentialsId, @AncestorInPath @Nullable Item item) {
+    private FormValidation testConnection(
+            final String defectDojoUrl, final String defectDojoCredentialsId, @AncestorInPath @Nullable Item item) {
         if (item == null) {
             Jenkins.get().checkPermission(Jenkins.ADMINISTER);
         } else {
@@ -293,9 +324,13 @@ public class DescriptorImpl extends BuildStepDescriptor<Publisher> implements Se
         }
         FormValidation.Kind formValid = FormValidation.Kind.OK;
         // url may come from instance-config. if empty, then take it from global config (this)
-        final String url = Optional.ofNullable(PluginUtil.parseBaseUrl(defectDojoUrl)).orElseGet(this::getDefectDojoUrl);
+        final String url =
+                Optional.ofNullable(PluginUtil.parseBaseUrl(defectDojoUrl)).orElseGet(this::getDefectDojoUrl);
         // api-key may come from instance-config. if empty, then take it from global config (this)
-        final Secret apiKey = lookupApiKey(Optional.ofNullable(StringUtils.trimToNull(defectDojoCredentialsId)).orElseGet(this::getDefectDojoCredentialsId), item);
+        final Secret apiKey = lookupApiKey(
+                Optional.ofNullable(StringUtils.trimToNull(defectDojoCredentialsId))
+                        .orElseGet(this::getDefectDojoCredentialsId),
+                item);
         if (doCheckDefectDojoUrl(url, item).kind == formValid && apiKey != null) {
             try {
                 final ApiClient apiClient = getClient(url, apiKey);
@@ -303,7 +338,11 @@ public class DescriptorImpl extends BuildStepDescriptor<Publisher> implements Se
                 if (!status) {
                     return FormValidation.error(Messages.Publisher_ConnectionTest_Error("Something went wrong"));
                 }
-                return  FormValidation.respond(formValid, String.format("<div class=\"%s\">%s</div>", formValid.name().toLowerCase(Locale.ENGLISH), "Connection OK"));
+                return FormValidation.respond(
+                        formValid,
+                        String.format(
+                                "<div class=\"%s\">%s</div>",
+                                formValid.name().toLowerCase(Locale.ENGLISH), "Connection OK"));
             } catch (ApiClientException e) {
                 return FormValidation.error(e, Messages.Publisher_ConnectionTest_Error(e.getMessage()));
             }
@@ -335,7 +374,12 @@ public class DescriptorImpl extends BuildStepDescriptor<Publisher> implements Se
     }
 
     private ApiClient getClient(final String baseUrl, final Secret apiKey) {
-        return clientFactory.create(baseUrl, apiKey, new ConsoleLogger(), Math.max(defectDojoConnectionTimeout, 0), Math.max(defectDojoReadTimeout, 0));
+        return clientFactory.create(
+                baseUrl,
+                apiKey,
+                new ConsoleLogger(),
+                Math.max(defectDojoConnectionTimeout, 0),
+                Math.max(defectDojoReadTimeout, 0));
     }
 
     private Secret lookupApiKey(final String credentialId, final Item item) {
@@ -344,9 +388,12 @@ public class DescriptorImpl extends BuildStepDescriptor<Publisher> implements Se
         } else {
             item.checkPermission(CredentialsProvider.USE_ITEM);
         }
-        return CredentialsProvider.lookupCredentials(StringCredentials.class, item, ACL.SYSTEM,  (DomainRequirement) null).stream()
+        return CredentialsProvider.lookupCredentials(
+                        StringCredentials.class, item, ACL.SYSTEM, (DomainRequirement) null)
+                .stream()
                 .filter(c -> c.getId().equals(credentialId))
                 .map(StringCredentials::getSecret)
-                .findFirst().orElse(null);
+                .findFirst()
+                .orElse(null);
     }
 }

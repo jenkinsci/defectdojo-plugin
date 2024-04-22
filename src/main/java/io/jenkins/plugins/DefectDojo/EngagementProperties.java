@@ -36,8 +36,13 @@ public class EngagementProperties extends AbstractDescribableImpl<EngagementProp
          */
         @POST
         @SuppressWarnings("lgtm[jenkins/no-permission-check]")
-        public ListBoxModel doFillParentIdItems(@RelativePath("..") @QueryParameter final String defectDojoUrl, @RelativePath("..") @QueryParameter final String defectDojoCredentialsId, @QueryParameter("productId") String product, @AncestorInPath @Nullable final Item item) {
-            io.jenkins.plugins.DefectDojo.DescriptorImpl pluginDescriptor = Jenkins.get().getDescriptorByType(io.jenkins.plugins.DefectDojo.DescriptorImpl.class);
+        public ListBoxModel doFillParentIdItems(
+                @RelativePath("..") @QueryParameter final String defectDojoUrl,
+                @RelativePath("..") @QueryParameter final String defectDojoCredentialsId,
+                @QueryParameter("productId") String product,
+                @AncestorInPath @Nullable final Item item) {
+            io.jenkins.plugins.DefectDojo.DescriptorImpl pluginDescriptor =
+                    Jenkins.get().getDescriptorByType(io.jenkins.plugins.DefectDojo.DescriptorImpl.class);
             return pluginDescriptor.doFillEngagementIdItems(defectDojoUrl, defectDojoCredentialsId, product, item);
         }
     }

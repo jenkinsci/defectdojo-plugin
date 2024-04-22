@@ -13,15 +13,15 @@
  */
 package io.jenkins.plugins.DefectDojo;
 
-import java.io.IOException;
-import java.io.PrintStream;
-import java.util.Arrays;
-import org.junit.jupiter.api.Test;
-
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
+
+import java.io.IOException;
+import java.io.PrintStream;
+import java.util.Arrays;
+import org.junit.jupiter.api.Test;
 
 class ConsoleLoggerTest {
 
@@ -32,7 +32,7 @@ class ConsoleLoggerTest {
         uut.log("test\r\nline2");
         verify(ps).println("[DefectDojo] test\r\n[DefectDojo] line2");
     }
-    
+
     @Test
     void testWrite() throws IOException {
         PrintStream ps = spy(new PrintStream(System.err));

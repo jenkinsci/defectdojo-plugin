@@ -13,6 +13,15 @@
  */
 package io.jenkins.plugins.DefectDojo;
 
+import static java.net.HttpURLConnection.HTTP_ACCEPTED;
+import static java.net.HttpURLConnection.HTTP_BAD_REQUEST;
+import static java.net.HttpURLConnection.HTTP_CREATED;
+import static java.net.HttpURLConnection.HTTP_NOT_FOUND;
+import static java.net.HttpURLConnection.HTTP_OK;
+import static java.net.HttpURLConnection.HTTP_UNAUTHORIZED;
+import static org.springframework.http.HttpHeaders.ACCEPT;
+import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
+
 import edu.umd.cs.findbugs.annotations.NonNull;
 import edu.umd.cs.findbugs.annotations.Nullable;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
@@ -30,9 +39,9 @@ import java.util.List;
 import java.util.stream.Collectors;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
+import okhttp3.MultipartBody;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
-import okhttp3.MultipartBody;
 import okhttp3.RequestBody;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.http.HttpStatus;
@@ -43,15 +52,6 @@ import org.springframework.retry.policy.CompositeRetryPolicy;
 import org.springframework.retry.policy.MaxAttemptsRetryPolicy;
 import org.springframework.retry.support.RetryTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
-
-import static java.net.HttpURLConnection.HTTP_ACCEPTED;
-import static java.net.HttpURLConnection.HTTP_BAD_REQUEST;
-import static java.net.HttpURLConnection.HTTP_CREATED;
-import static java.net.HttpURLConnection.HTTP_NOT_FOUND;
-import static java.net.HttpURLConnection.HTTP_OK;
-import static java.net.HttpURLConnection.HTTP_UNAUTHORIZED;
-import static org.springframework.http.HttpHeaders.ACCEPT;
-import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
 
 public class ApiClient {
 
@@ -94,14 +94,23 @@ public class ApiClient {
      * to DT
      * @param readTimeout the read-timeout in seconds for every call to DT
      */
-    public ApiClient(@NonNull final String baseUrl, @NonNull final Secret apiKey, @NonNull final ConsoleLogger logger, final int connectionTimeout, final int readTimeout) {
+    public ApiClient(
+            @NonNull final String baseUrl,
+            @NonNull final Secret apiKey,
+            @NonNull final ConsoleLogger logger,
+            final int connectionTimeout,
+            final int readTimeout) {
         this(baseUrl, apiKey, logger, () -> JenkinsOkHttpClient.newClientBuilder(new OkHttpClient())
                 .connectTimeout(Duration.ofSeconds(connectionTimeout))
                 .readTimeout(Duration.ofSeconds(readTimeout))
                 .build());
     }
 
-    ApiClient(@NonNull final String baseUrl, @NonNull final Secret apiKey, @NonNull final ConsoleLogger logger, @NonNull final HttpClientFactory factory) {
+    ApiClient(
+            @NonNull final String baseUrl,
+            @NonNull final Secret apiKey,
+            @NonNull final ConsoleLogger logger,
+            @NonNull final HttpClientFactory factory) {
         this.baseUrl = baseUrl;
         this.apiKey = apiKey;
         this.logger = logger;
@@ -120,12 +129,14 @@ public class ApiClient {
                 } else {
                     final int status = response.code();
                     logger.log(response.body().string());
-                    throw new ApiClientException(Messages.ApiClient_Error_Connection(status, HttpStatus.valueOf(status).getReasonPhrase()));
+                    throw new ApiClientException(Messages.ApiClient_Error_Connection(
+                            status, HttpStatus.valueOf(status).getReasonPhrase()));
                 }
             } catch (ApiClientException e) {
                 throw e;
             } catch (IOException e) {
-                throw new ApiClientException(Messages.ApiClient_Error_Connection(StringUtils.EMPTY, StringUtils.EMPTY), e);
+                throw new ApiClientException(
+                        Messages.ApiClient_Error_Connection(StringUtils.EMPTY, StringUtils.EMPTY), e);
             }
         });
     }
@@ -155,9 +166,10 @@ public class ApiClient {
     }
 
     @NonNull
-    public String getEngagementId(@Nullable final String productId, final String engagementName) throws ApiClientException {
-        final var uriBuilder = UriComponentsBuilder.fromUriString(ENGAGEMENT_URL)
-                .queryParam(LOOKUP_NAME_PARAM, "{engagementName}");
+    public String getEngagementId(@Nullable final String productId, final String engagementName)
+            throws ApiClientException {
+        final var uriBuilder =
+                UriComponentsBuilder.fromUriString(ENGAGEMENT_URL).queryParam(LOOKUP_NAME_PARAM, "{engagementName}");
         var uri = uriBuilder.build(engagementName);
         if (productId != null) {
             uriBuilder.queryParam(LOOKUP_ENGAGEMENT_BY_PRODUCT_ID_PARAM, "{productId}");
@@ -168,8 +180,16 @@ public class ApiClient {
 
     @NonNull
     @SuppressFBWarnings("NP_NULL_ON_SOME_PATH_FROM_RETURN_VALUE")
-    public Boolean upload(final String projectId, final String engagementId, @Nullable final String sourceCodeUri, @Nullable String branchTag, @Nullable String commitHash,
-            @NonNull final FilePath artifact, @NonNull final String scanType, boolean reuploadScan) throws IOException, InterruptedException {
+    public Boolean upload(
+            final String projectId,
+            final String engagementId,
+            @Nullable final String sourceCodeUri,
+            @Nullable String branchTag,
+            @Nullable String commitHash,
+            @NonNull final FilePath artifact,
+            @NonNull final String scanType,
+            boolean reuploadScan)
+            throws IOException, InterruptedException {
         if (!artifact.exists()) {
             logger.log(Messages.Builder_Error_Processing(artifact.getRemote(), "e.getLocalizedMessage()"));
             return false;
@@ -181,11 +201,11 @@ public class ApiClient {
         jsonBody.put("scan_type", scanType);
         jsonBody.put("engagement", engagementId);
         jsonBody.put("product_id", projectId);
-        
+
         if (StringUtils.isNotBlank(sourceCodeUri)) {
             jsonBody.put("source_code_management_uri", sourceCodeUri);
         }
-        if (StringUtils.isNotBlank(branchTag)){
+        if (StringUtils.isNotBlank(branchTag)) {
             jsonBody.put("branch_tag", branchTag);
         }
         if (StringUtils.isNotBlank(commitHash)) {
@@ -197,8 +217,9 @@ public class ApiClient {
         jsonBody.put("environment", "");
         jsonBody.put("minimum_severity", "Low");
 
-        RequestBody fileRequestBody = RequestBody.create(okhttp3.MediaType.parse("application/octet-stream"), new File(artifact.getRemote()));
-        
+        RequestBody fileRequestBody =
+                RequestBody.create(okhttp3.MediaType.parse("application/octet-stream"), new File(artifact.getRemote()));
+
         if (StringUtils.isNotBlank(engagementId)) {
             scanId = getScanId(engagementId, scanType);
         }
@@ -210,7 +231,7 @@ public class ApiClient {
             jsonBody.remove("active ");
             jsonBody.remove("verified");
         }
-        
+
         RequestBody uploadBody = createMultipartBody(jsonBody, fileRequestBody);
         final var request = createRequest(URI.create(url), "POST", uploadBody);
         return executeWithRetry(() -> {
@@ -233,22 +254,24 @@ public class ApiClient {
                         logger.log(Messages.Builder_Product_NotFound());
                         break;
                     default:
-                        logger.log(Messages.ApiClient_Error_Connection(status, HttpStatus.valueOf(status).getReasonPhrase()));
+                        logger.log(Messages.ApiClient_Error_Connection(
+                                status, HttpStatus.valueOf(status).getReasonPhrase()));
                         break;
                 }
                 logger.log(body);
                 return false;
             }
         });
-
     }
 
-    public String createEngagement(String engagementName, String productId, @Nullable String sourceCodeUrl) throws IOException {
-        final String defaultValues = "{\"description\": \"Auto-created via Jenkins\",\"engagement_type\":\"Interactive\",\"status\": \"In Progress\",\"deduplication_on_engagement\": \"true\"}";
+    public String createEngagement(String engagementName, String productId, @Nullable String sourceCodeUrl)
+            throws IOException {
+        final String defaultValues =
+                "{\"description\": \"Auto-created via Jenkins\",\"engagement_type\":\"Interactive\",\"status\": \"In Progress\",\"deduplication_on_engagement\": \"true\"}";
         JSONObject jsonBody = JSONObject.fromObject(defaultValues);
         LocalDate currentDate = LocalDate.now();
         DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
-        
+
         jsonBody.put("name", engagementName);
         jsonBody.put("product", productId);
         jsonBody.put("target_start", currentDate.format(dateFormatter));
@@ -258,7 +281,10 @@ public class ApiClient {
             jsonBody.put("source_code_management_uri", sourceCodeUrl);
         }
 
-        final var request = createRequest(URI.create(ENGAGEMENT_URL), "POST", RequestBody.create(jsonBody.toString(), okhttp3.MediaType.parse(APPLICATION_JSON_VALUE)));
+        final var request = createRequest(
+                URI.create(ENGAGEMENT_URL),
+                "POST",
+                RequestBody.create(jsonBody.toString(), okhttp3.MediaType.parse(APPLICATION_JSON_VALUE)));
         return executeWithRetry(() -> {
             try (var response = httpClient.newCall(request).execute()) {
                 final var body = response.body().string();
@@ -274,7 +300,8 @@ public class ApiClient {
                         logger.log(Messages.Builder_Unauthorized());
                         break;
                     default:
-                        logger.log(Messages.ApiClient_Error_Connection(status, HttpStatus.valueOf(status).getReasonPhrase()));
+                        logger.log(Messages.ApiClient_Error_Connection(
+                                status, HttpStatus.valueOf(status).getReasonPhrase()));
                         break;
                 }
                 logger.log(body);
@@ -286,14 +313,17 @@ public class ApiClient {
     public String createProduct(String productName, @Nullable String origin) throws IOException {
         final String defaultValues = "{\"description\": \"Auto-created via Jenkins\",\"prod_type\":\"1\"}";
         JSONObject jsonBody = JSONObject.fromObject(defaultValues);
-        
+
         jsonBody.put("name", productName);
 
         if (StringUtils.isNotBlank(origin)) {
             jsonBody.put("origin", origin);
         }
 
-        final var request = createRequest(URI.create(PRODUCT_URL), "POST", RequestBody.create(jsonBody.toString(), okhttp3.MediaType.parse(APPLICATION_JSON_VALUE)));
+        final var request = createRequest(
+                URI.create(PRODUCT_URL),
+                "POST",
+                RequestBody.create(jsonBody.toString(), okhttp3.MediaType.parse(APPLICATION_JSON_VALUE)));
         return executeWithRetry(() -> {
             try (var response = httpClient.newCall(request).execute()) {
                 final var body = response.body().string();
@@ -309,7 +339,8 @@ public class ApiClient {
                         logger.log(Messages.Builder_Unauthorized());
                         break;
                     default:
-                        logger.log(Messages.ApiClient_Error_Connection(status, HttpStatus.valueOf(status).getReasonPhrase()));
+                        logger.log(Messages.ApiClient_Error_Connection(
+                                status, HttpStatus.valueOf(status).getReasonPhrase()));
                         break;
                 }
                 logger.log(body);
@@ -324,10 +355,9 @@ public class ApiClient {
         int offset = 0;
         boolean fetchMore = true;
         while (fetchMore) {
-            final JSONArray pagedData = (JSONArray) getPaged(offset, offset+=500, URL);
-            List<JSONObject> fetchedData = pagedData.stream()
-                    .map(JSONObject.class::cast)
-                    .collect(Collectors.toList());
+            final JSONArray pagedData = (JSONArray) getPaged(offset, offset += 500, URL);
+            List<JSONObject> fetchedData =
+                    pagedData.stream().map(JSONObject.class::cast).collect(Collectors.toList());
             fetchMore = !fetchedData.isEmpty();
             data.addAll(fetchedData);
         }
@@ -349,14 +379,16 @@ public class ApiClient {
                 }
                 return new JSONArray();
             } catch (IOException e) {
-                throw new ApiClientException(Messages.ApiClient_Error_Connection(StringUtils.EMPTY, StringUtils.EMPTY), e);
+                throw new ApiClientException(
+                        Messages.ApiClient_Error_Connection(StringUtils.EMPTY, StringUtils.EMPTY), e);
             }
         });
     }
 
     @NonNull
     @SuppressFBWarnings("NP_NULL_ON_SOME_PATH_FROM_RETURN_VALUE")
-    private String getScanId(@NonNull final String engagmentId, @NonNull final String scanType) throws ApiClientException {
+    private String getScanId(@NonNull final String engagmentId, @NonNull final String scanType)
+            throws ApiClientException {
         final var uri = UriComponentsBuilder.fromUriString(TESTS_URL)
                 .queryParam(LOOKUP_TEST_BY_EGAGEMENT_ID_PARAM, "{id}")
                 .queryParam(LOOKUP_TEST_PARAM, "{scanType}")
@@ -372,14 +404,15 @@ public class ApiClient {
                     logger.log(body);
                 }
                 final var results = getRequestResult(body);
-                if(results.size() > 0) {
+                if (results.size() > 0) {
                     return ((JSONObject) results.get(0)).getString("id");
                 }
                 return null;
             } catch (ApiClientException e) {
                 throw e;
             } catch (IOException e) {
-                throw new ApiClientException(Messages.ApiClient_Error_Connection(StringUtils.EMPTY, StringUtils.EMPTY), e);
+                throw new ApiClientException(
+                        Messages.ApiClient_Error_Connection(StringUtils.EMPTY, StringUtils.EMPTY), e);
             }
         });
     }
@@ -390,8 +423,7 @@ public class ApiClient {
 
     @SuppressWarnings("unchecked")
     private RequestBody createMultipartBody(JSONObject json, @Nullable RequestBody filePart) {
-        MultipartBody.Builder builder = new MultipartBody.Builder()
-                .setType(MultipartBody.FORM);
+        MultipartBody.Builder builder = new MultipartBody.Builder().setType(MultipartBody.FORM);
 
         // Convert JSON string to form parts
         json.keySet().forEach(key -> {
@@ -427,7 +459,9 @@ public class ApiClient {
 
         backOffPolicy.setMinBackOffPeriod(50);
         backOffPolicy.setMaxBackOffPeriod(500);
-        retryPolicy.setPolicies(new RetryPolicy[]{new MaxAttemptsRetryPolicy(2), new BinaryExceptionClassifierRetryPolicy(exceptionClassifier)});
+        retryPolicy.setPolicies(new RetryPolicy[] {
+            new MaxAttemptsRetryPolicy(2), new BinaryExceptionClassifierRetryPolicy(exceptionClassifier)
+        });
         template.setBackOffPolicy(backOffPolicy);
         template.setRetryPolicy(retryPolicy);
 

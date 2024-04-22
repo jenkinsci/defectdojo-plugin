@@ -13,6 +13,16 @@
  */
 package io.jenkins.plugins.DefectDojo;
 
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatCode;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+
+import hudson.util.Secret;
 import io.netty.handler.codec.http.HttpHeaderNames;
 import io.netty.handler.codec.http.HttpHeaderValues;
 import io.netty.handler.codec.http.HttpResponseStatus;
@@ -26,20 +36,10 @@ import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.junit.jupiter.WithJenkins;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import hudson.util.Secret;
 import reactor.core.publisher.Mono;
 import reactor.netty.DisposableServer;
 import reactor.netty.http.server.HttpServer;
 import reactor.netty.http.server.HttpServerRequest;
-
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatCode;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.doThrow;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
 
 /**
  *
@@ -76,7 +76,8 @@ class ApiClientTest {
                 .describedAs("Header '%s' must have value '%s'", ApiClient.API_KEY_HEADER, API_KEY)
                 .isTrue();
         assertThat(request.requestHeaders().contains(HttpHeaderNames.ACCEPT, HttpHeaderValues.APPLICATION_JSON, true))
-                .describedAs("Header '%s' must have value '%s'", HttpHeaderNames.ACCEPT, HttpHeaderValues.APPLICATION_JSON)
+                .describedAs(
+                        "Header '%s' must have value '%s'", HttpHeaderNames.ACCEPT, HttpHeaderValues.APPLICATION_JSON)
                 .isTrue();
     }
 
@@ -86,9 +87,9 @@ class ApiClientTest {
                 .host("localhost")
                 .port(0)
                 .route(routes -> routes.get(ApiClient.PRODUCT_URL, (request, response) -> {
-            assertCommonHeaders(request);
-            return response.status(200).send();
-        }))
+                    assertCommonHeaders(request);
+                    return response.status(200).send();
+                }))
                 .bindNow();
 
         ApiClient uut = createClient();
@@ -102,8 +103,7 @@ class ApiClientTest {
         final var call = mock(okhttp3.Call.class);
         final var uut = createClient(httpClient);
         when(httpClient.newCall(any(okhttp3.Request.class))).thenReturn(call);
-        doThrow(new ConnectException("oops"))
-                .when(call).execute();
+        doThrow(new ConnectException("oops")).when(call).execute();
 
         assertThatCode(() -> uut.testConnection())
                 .hasMessage(Messages.ApiClient_Error_Connection("", ""))
@@ -116,14 +116,19 @@ class ApiClientTest {
         server = HttpServer.create()
                 .host("localhost")
                 .port(0)
-                .route(routes -> routes.get(ApiClient.PRODUCT_URL, (request, response) -> response.status(HttpResponseStatus.INTERNAL_SERVER_ERROR).sendString(Mono.just("something went wrong"))))
+                .route(routes -> routes.get(ApiClient.PRODUCT_URL, (request, response) -> response.status(
+                                HttpResponseStatus.INTERNAL_SERVER_ERROR)
+                        .sendString(Mono.just("something went wrong"))))
                 .bindNow();
 
         ApiClient uut = createClient();
 
-        assertThatCode(() -> uut.testConnection()).isInstanceOf(ApiClientException.class)
+        assertThatCode(() -> uut.testConnection())
+                .isInstanceOf(ApiClientException.class)
                 .hasNoCause()
-                .hasMessage(Messages.ApiClient_Error_Connection(HttpResponseStatus.INTERNAL_SERVER_ERROR.code(), HttpResponseStatus.INTERNAL_SERVER_ERROR.reasonPhrase()));
+                .hasMessage(Messages.ApiClient_Error_Connection(
+                        HttpResponseStatus.INTERNAL_SERVER_ERROR.code(),
+                        HttpResponseStatus.INTERNAL_SERVER_ERROR.reasonPhrase()));
 
         verify(logger).log("something went wrong");
     }

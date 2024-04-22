@@ -14,18 +14,18 @@
 package io.jenkins.plugins.DefectDojo;
 
 import com.cloudbees.plugins.credentials.CredentialsProvider;
+import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.AbortException;
+import hudson.EnvVars;
 import hudson.FilePath;
 import hudson.Launcher;
 import hudson.model.Run;
 import hudson.model.TaskListener;
 import hudson.tasks.BuildStepMonitor;
-import java.io.IOException;
-import java.io.Serializable;
-import edu.umd.cs.findbugs.annotations.NonNull;
-import hudson.EnvVars;
 import hudson.tasks.Recorder;
 import hudson.util.Secret;
+import java.io.IOException;
+import java.io.Serializable;
 import java.util.Optional;
 import jenkins.tasks.SimpleBuildStep;
 import lombok.AccessLevel;
@@ -54,7 +54,7 @@ public final class DefectDojoPublisher extends Recorder implements SimpleBuildSt
      */
     private String productName;
 
-     /**
+    /**
      * the engagement ID to upload to. This is a per-build config item.
      */
     private String engagementId;
@@ -134,7 +134,7 @@ public final class DefectDojoPublisher extends Recorder implements SimpleBuildSt
     private transient DescriptorImpl descriptor;
 
     private transient boolean overrideGlobals;
-    
+
     @Getter(AccessLevel.NONE)
     @Setter(AccessLevel.NONE)
     private transient String projectIdCache;
@@ -145,13 +145,14 @@ public final class DefectDojoPublisher extends Recorder implements SimpleBuildSt
         this(artifact, scanType, ApiClient::new);
     }
 
-    DefectDojoPublisher(final String artifact, final String scanType, @lombok.NonNull final ApiClientFactory clientFactory) {
+    DefectDojoPublisher(
+            final String artifact, final String scanType, @lombok.NonNull final ApiClientFactory clientFactory) {
         this.artifact = artifact;
         this.scanType = scanType;
         this.clientFactory = clientFactory;
         descriptor = getDescriptor();
     }
-    
+
     /**
      * This method is called whenever the build step is executed.
      *
@@ -164,7 +165,13 @@ public final class DefectDojoPublisher extends Recorder implements SimpleBuildSt
      * @throws IOException if something goes wrong
      */
     @Override
-    public void perform(@NonNull final Run<?, ?> run, @NonNull final FilePath workspace, @NonNull final EnvVars env, @NonNull final Launcher launcher, @NonNull final TaskListener listener) throws InterruptedException, IOException {
+    public void perform(
+            @NonNull final Run<?, ?> run,
+            @NonNull final FilePath workspace,
+            @NonNull final EnvVars env,
+            @NonNull final Launcher launcher,
+            @NonNull final TaskListener listener)
+            throws InterruptedException, IOException {
         final ConsoleLogger logger = new ConsoleLogger(listener.getLogger());
         final String effectiveProductName = env.expand(productName);
         final String effectiveEngagementName = env.expand(engagementName);
@@ -203,48 +210,65 @@ public final class DefectDojoPublisher extends Recorder implements SimpleBuildSt
 
         final String effectiveUrl = getEffectiveUrl();
         final Secret effectiveApiKey = getEffectiveApiKey(run);
-        final ApiClient apiClient = clientFactory.create(effectiveUrl, effectiveApiKey, logger, getEffectiveConnectionTimeout(), getEffectiveReadTimeout());
+        final ApiClient apiClient = clientFactory.create(
+                effectiveUrl, effectiveApiKey, logger, getEffectiveConnectionTimeout(), getEffectiveReadTimeout());
 
-        if (!effectiveAutoCreateProduct && StringUtils.isNotBlank(effectiveProductName) && StringUtils.isBlank(productId)) {
+        if (!effectiveAutoCreateProduct
+                && StringUtils.isNotBlank(effectiveProductName)
+                && StringUtils.isBlank(productId)) {
             logger.log(Messages.Builder_Fetching_Product(effectiveProductName));
             productId = apiClient.getProductId(effectiveProductName);
         }
 
-        if (effectiveAutoCreateProduct && StringUtils.isBlank(productId) && StringUtils.isNotBlank(effectiveProductName)) {
+        if (effectiveAutoCreateProduct
+                && StringUtils.isBlank(productId)
+                && StringUtils.isNotBlank(effectiveProductName)) {
             logger.log(Messages.Builder_Publishing_Product(effectiveProductName));
             productId = apiClient.createProduct(effectiveProductName, null);
         }
-        
+
         if (StringUtils.isBlank(productId)) {
             logger.log(Messages.Builder_Result_ProductIdMissing());
             throw new AbortException(Messages.Builder_Result_ProductIdMissing());
         }
 
-        if (effectiveAutoCreateEngagement && StringUtils.isNotBlank(effectiveEngagementName) && StringUtils.isBlank(engagementId)) {
+        if (effectiveAutoCreateEngagement
+                && StringUtils.isNotBlank(effectiveEngagementName)
+                && StringUtils.isBlank(engagementId)) {
             logger.log(Messages.Builder_Fetching_Engagement(effectiveEngagementName));
             engagementId = apiClient.getEngagementId(productId, effectiveEngagementName);
         }
 
-        if (effectiveAutoCreateEngagement && StringUtils.isNotBlank(effectiveEngagementName) && StringUtils.isBlank(engagementId)) {
+        if (effectiveAutoCreateEngagement
+                && StringUtils.isNotBlank(effectiveEngagementName)
+                && StringUtils.isBlank(engagementId)) {
             logger.log(Messages.Builder_Publishing_Engagement(effectiveProductName, effectiveEngagementName));
             engagementId = apiClient.createEngagement(effectiveEngagementName, productId, effectiveSourceCodeUrl);
         }
-        
-        if(StringUtils.isBlank(engagementId)) {
+
+        if (StringUtils.isBlank(engagementId)) {
             logger.log(Messages.Builder_Result_EngagementIdMissing());
             throw new AbortException(Messages.Builder_Result_EngagementIdMissing());
         }
 
         logger.log(Messages.Builder_Publishing(effectiveUrl));
-        final boolean uploadResult = apiClient.upload(productId, engagementId, effectiveSourceCodeUrl, 
-                    effectiveBranchTag, effectiveCommitHash, artifactFilePath, scanType, effectiveReupload);
+        final boolean uploadResult = apiClient.upload(
+                productId,
+                engagementId,
+                effectiveSourceCodeUrl,
+                effectiveBranchTag,
+                effectiveCommitHash,
+                artifactFilePath,
+                scanType,
+                effectiveReupload);
 
         if (!uploadResult) {
             throw new AbortException(Messages.Builder_Upload_Failed());
         }
 
-        logger.log(Messages.Builder_Success(String.format("%s/engagements/%s", getEffectiveUrl(), StringUtils.isNotBlank(engagementId) ? engagementId : StringUtils.EMPTY)));
-
+        logger.log(Messages.Builder_Success(String.format(
+                "%s/engagements/%s",
+                getEffectiveUrl(), StringUtils.isNotBlank(engagementId) ? engagementId : StringUtils.EMPTY)));
     }
 
     /**
@@ -274,7 +298,9 @@ public final class DefectDojoPublisher extends Recorder implements SimpleBuildSt
         if (descriptor == null) {
             descriptor = getDescriptor();
         }
-        overrideGlobals = StringUtils.isNotBlank(defectDojoUrl) || StringUtils.isNotBlank(defectDojoCredentialsId) || autoCreateProducts != null;
+        overrideGlobals = StringUtils.isNotBlank(defectDojoUrl)
+                || StringUtils.isNotBlank(defectDojoCredentialsId)
+                || autoCreateProducts != null;
         return this;
     }
 
@@ -308,7 +334,8 @@ public final class DefectDojoPublisher extends Recorder implements SimpleBuildSt
      */
     @NonNull
     private String getEffectiveUrl() {
-        String url = Optional.ofNullable(PluginUtil.parseBaseUrl(defectDojoUrl)).orElseGet(descriptor::getDefectDojoUrl);
+        String url =
+                Optional.ofNullable(PluginUtil.parseBaseUrl(defectDojoUrl)).orElseGet(descriptor::getDefectDojoUrl);
         return Optional.ofNullable(url).orElse(StringUtils.EMPTY);
     }
 
@@ -319,10 +346,13 @@ public final class DefectDojoPublisher extends Recorder implements SimpleBuildSt
      * @return effective api-key
      */
     private Secret getEffectiveApiKey(final @NonNull Run<?, ?> run) {
-        final String credId = Optional.ofNullable(StringUtils.trimToNull(defectDojoCredentialsId)).orElseGet(descriptor::getDefectDojoCredentialsId);
+        final String credId = Optional.ofNullable(StringUtils.trimToNull(defectDojoCredentialsId))
+                .orElseGet(descriptor::getDefectDojoCredentialsId);
         if (credId != null) {
             StringCredentials cred = CredentialsProvider.findCredentialById(credId, StringCredentials.class, run);
-            return Optional.ofNullable(CredentialsProvider.track(run, cred)).map(StringCredentials::getSecret).orElse(null);
+            return Optional.ofNullable(CredentialsProvider.track(run, cred))
+                    .map(StringCredentials::getSecret)
+                    .orElse(null);
         } else {
             return null;
         }
@@ -354,7 +384,9 @@ public final class DefectDojoPublisher extends Recorder implements SimpleBuildSt
      */
     @NonNull
     private int getEffectiveConnectionTimeout() {
-        return Optional.ofNullable(defectDojoConnectionTimeout).filter(v -> v >= 0).orElseGet(descriptor::getDefectDojoConnectionTimeout);
+        return Optional.ofNullable(defectDojoConnectionTimeout)
+                .filter(v -> v >= 0)
+                .orElseGet(descriptor::getDefectDojoConnectionTimeout);
     }
 
     /**
@@ -362,6 +394,8 @@ public final class DefectDojoPublisher extends Recorder implements SimpleBuildSt
      */
     @NonNull
     private int getEffectiveReadTimeout() {
-        return Optional.ofNullable(defectDojoReadTimeout).filter(v -> v >= 0).orElseGet(descriptor::getDefectDojoReadTimeout);
+        return Optional.ofNullable(defectDojoReadTimeout)
+                .filter(v -> v >= 0)
+                .orElseGet(descriptor::getDefectDojoReadTimeout);
     }
 }

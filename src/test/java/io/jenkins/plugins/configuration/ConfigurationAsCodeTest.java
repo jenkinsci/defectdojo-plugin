@@ -1,17 +1,16 @@
 package io.jenkins.plugins.configuration;
 
+import static io.jenkins.plugins.casc.misc.Util.getUnclassifiedRoot;
+import static io.jenkins.plugins.casc.misc.Util.toYamlString;
+import static org.assertj.core.api.Assertions.assertThat;
+
 import io.jenkins.plugins.DefectDojo.DescriptorImpl;
 import io.jenkins.plugins.casc.ConfigurationContext;
 import io.jenkins.plugins.casc.ConfiguratorRegistry;
 import io.jenkins.plugins.casc.misc.ConfiguredWithCode;
 import io.jenkins.plugins.casc.misc.JenkinsConfiguredWithCodeRule;
-
 import org.junit.ClassRule;
 import org.junit.Test;
-
-import static io.jenkins.plugins.casc.misc.Util.getUnclassifiedRoot;
-import static io.jenkins.plugins.casc.misc.Util.toYamlString;
-import static org.assertj.core.api.Assertions.assertThat;
 
 public class ConfigurationAsCodeTest {
 
@@ -30,8 +29,7 @@ public class ConfigurationAsCodeTest {
                 .returns(false, DescriptorImpl::isDefectDojoAutoCreateEngagements)
                 .returns(false, DescriptorImpl::isDefectDojoReuploadScan)
                 .returns(1, DescriptorImpl::getDefectDojoConnectionTimeout)
-                .returns(3, DescriptorImpl::getDefectDojoReadTimeout)
-                ;
+                .returns(3, DescriptorImpl::getDefectDojoReadTimeout);
     }
 
     @Test

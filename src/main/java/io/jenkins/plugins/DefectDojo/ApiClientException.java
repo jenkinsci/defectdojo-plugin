@@ -24,5 +24,4 @@ public class ApiClientException extends IOException {
     public ApiClientException(String message, Throwable cause) {
         super(message, cause);
     }
-
 }

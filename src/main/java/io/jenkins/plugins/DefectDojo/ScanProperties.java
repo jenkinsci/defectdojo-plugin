@@ -16,7 +16,6 @@ import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.QueryParameter;
 import org.kohsuke.stapler.verb.POST;
 
-
 @Getter
 @lombok.NoArgsConstructor(onConstructor_ = {@DataBoundConstructor})
 @EqualsAndHashCode(callSuper = false, doNotUseGetters = true)
@@ -37,8 +36,12 @@ public class ScanProperties extends AbstractDescribableImpl<ScanProperties> impl
          */
         @POST
         @SuppressWarnings("lgtm[jenkins/no-permission-check]")
-        public ListBoxModel doFillScanTpeItems(@RelativePath("..") @QueryParameter final String defectDojoUrl, @RelativePath("..") @QueryParameter final String defectDojoCredentialsId, @AncestorInPath @Nullable final Item item) {
-            io.jenkins.plugins.DefectDojo.DescriptorImpl pluginDescriptor = Jenkins.get().getDescriptorByType(io.jenkins.plugins.DefectDojo.DescriptorImpl.class);
+        public ListBoxModel doFillScanTpeItems(
+                @RelativePath("..") @QueryParameter final String defectDojoUrl,
+                @RelativePath("..") @QueryParameter final String defectDojoCredentialsId,
+                @AncestorInPath @Nullable final Item item) {
+            io.jenkins.plugins.DefectDojo.DescriptorImpl pluginDescriptor =
+                    Jenkins.get().getDescriptorByType(io.jenkins.plugins.DefectDojo.DescriptorImpl.class);
             return pluginDescriptor.doFillScanTypeItems(defectDojoUrl, defectDojoCredentialsId, item);
         }
     }
