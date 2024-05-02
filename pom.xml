@@ -11,7 +11,7 @@
 
   <groupId>io.jenkins.plugins</groupId>
   <artifactId>defectdojo</artifactId>
-  <version>0.0.1-SNAPSHOT</version>
+  <version>${revision}${changelist}</version>
   <packaging>hpi</packaging>
 
   <name>DefectDojo Plugin</name>
@@ -48,6 +48,8 @@
   <properties>
     <jenkins.version>2.426.3</jenkins.version>
     <spotless.check.skip>false</spotless.check.skip>
+    <revision>1.0</revision>
+    <changelist />
   </properties>
 
   <dependencyManagement>
