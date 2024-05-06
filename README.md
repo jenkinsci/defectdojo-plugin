@@ -58,7 +58,7 @@ pipeline {
         stage('DefectDojoPublisher') {
             steps {
                 withCredentials([string(credentialsId: 'CREDENTIALS_ID', variable: 'API_KEY')]) {
-                    defectDojoPublisher(artifact: 'target/dependency-check-report.xml', productName: 'my-product', engagementName: 'ci/cd', defectDojoCredentialsId: API_KEY, sourceCodeUri: 'https://git.com/org/project.git', branchTag: 'main')
+                    defectDojoPublisher(artifact: 'target/dependency-check-report.xml', productName: 'my-product', scanType: 'Dependency Check Scan', engagementName: 'ci/cd', defectDojoCredentialsId: API_KEY, sourceCodeUri: 'https://git.com/org/project.git', branchTag: 'main')
                 }
             }
         }
