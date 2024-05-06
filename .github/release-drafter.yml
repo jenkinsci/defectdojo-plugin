@@ -1,2 +1,1 @@
 _extends: .github
-tag-template: ${artifactId}-$NEXT_MINOR_VERSION
