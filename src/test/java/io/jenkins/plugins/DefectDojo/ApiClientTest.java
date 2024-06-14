@@ -22,16 +22,20 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import hudson.FilePath;
 import hudson.util.Secret;
 import io.netty.handler.codec.http.HttpHeaderNames;
 import io.netty.handler.codec.http.HttpHeaderValues;
 import io.netty.handler.codec.http.HttpResponseStatus;
+import java.io.File;
 import java.io.IOException;
 import java.net.ConnectException;
+import java.nio.file.Path;
 import okhttp3.OkHttpClient;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.api.io.TempDir;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.junit.jupiter.WithJenkins;
 import org.mockito.Mock;
@@ -131,5 +135,43 @@ class ApiClientTest {
                         HttpResponseStatus.INTERNAL_SERVER_ERROR.reasonPhrase()));
 
         verify(logger).log("something went wrong");
+    }
+
+    @Test
+    void testUploadNoProduct(@TempDir Path tmpWork, JenkinsRule r) throws IOException, InterruptedException {
+        server = HttpServer.create()
+                .host("localhost")
+                .port(0)
+                .route(routes -> routes.get(ApiClient.UPLOAD_URL, (request, response) -> {
+                    assertCommonHeaders(request);
+                    return response.status(400).send();
+                }))
+                .bindNow();
+
+        File artifact = tmpWork.resolve("report.xml").toFile();
+        artifact.createNewFile();
+        FilePath artifactPath = new FilePath(artifact);
+
+        ApiClient uut = createClient();
+
+        assertThat(uut.upload(null, null, null, null, null, artifactPath, null, false))
+                .isEqualTo(false);
+        verify(logger).log(Messages.Builder_Product_NotFound());
+    }
+
+    @Test
+    void testGetEngagementIdFromDojo(JenkinsRule r) throws ApiClientException {
+        server = HttpServer.create()
+                .host("localhost")
+                .port(0)
+                .route(routes -> routes.get(ApiClient.ENGAGEMENT_URL, (request, response) -> {
+                    assertCommonHeaders(request);
+                    return response.status(200)
+                            .sendString(Mono.just("{\"results\": [{\"id\": 10 }], \"prefetch\": {}}"));
+                }))
+                .bindNow();
+
+        ApiClient uut = createClient();
+        assertThat(uut.getEngagementId(null, "test")).isEqualTo("10");
     }
 }
