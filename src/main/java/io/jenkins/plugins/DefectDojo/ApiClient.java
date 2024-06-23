@@ -67,7 +67,7 @@ public class ApiClient {
     static final String LOOKUP_TEST_PARAM = "scan_type";
     static final String LOOKUP_NAME_PARAM = "name";
     static final String LOOKUP_NAME_EXACT_PARAM = "name_exact";
-    static final String LOOKUP_ENGAGEMENT_BY_PRODUCT_ID_PARAM = "product";
+    static final String LOOKUP_BY_PRODUCT_ID_PARAM = "product";
     static final String LOOKUP_ID_PARAM = "id";
 
     /**
@@ -148,8 +148,8 @@ public class ApiClient {
 
     @NonNull
     public List<JSONObject> getEngagements(final String productId) throws ApiClientException {
-        String URL = ENGAGEMENT_URL + "?product=" + productId;
-        return getData(URL);
+        String url = ENGAGEMENT_URL + "?product=" + productId;
+        return getData(url);
     }
 
     @NonNull
@@ -172,7 +172,7 @@ public class ApiClient {
                 UriComponentsBuilder.fromUriString(ENGAGEMENT_URL).queryParam(LOOKUP_NAME_PARAM, "{engagementName}");
         var uri = uriBuilder.build(engagementName);
         if (productId != null) {
-            uriBuilder.queryParam(LOOKUP_ENGAGEMENT_BY_PRODUCT_ID_PARAM, "{productId}");
+            uriBuilder.queryParam(LOOKUP_BY_PRODUCT_ID_PARAM, "{productId}");
             uri = uriBuilder.build(engagementName, productId);
         }
         return getIdFromDojo(createRequest(uri));
@@ -191,7 +191,7 @@ public class ApiClient {
             boolean reuploadScan)
             throws IOException, InterruptedException {
         if (!artifact.exists()) {
-            logger.log(Messages.Builder_Error_Processing(artifact.getRemote(), "e.getLocalizedMessage()"));
+            logger.log(Messages.Builder_Error_Processing(artifact.getRemote()));
             return false;
         }
         String scanId = null;
