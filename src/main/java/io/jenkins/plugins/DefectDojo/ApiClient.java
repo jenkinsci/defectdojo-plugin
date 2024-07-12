@@ -61,8 +61,10 @@ public class ApiClient {
     static final String UPLOAD_URL = API_URL + "/import-scan/";
     static final String REUPLOAD_URL = API_URL + "/reimport-scan/";
     static final String PRODUCT_URL = API_URL + "/products/";
+    static final String PRODUCT_API_SCAN_CONFIGURATIONS_URL = API_URL + "/product_api_scan_configurations/";
     static final String SCAN_TYPE_URL = API_URL + "/test_types";
     static final String TESTS_URL = API_URL + "/tests";
+    static final String TOOL_CONFIGURATIONS_URL = API_URL + "/tool_configurations/";
     static final String LOOKUP_TEST_BY_EGAGEMENT_ID_PARAM = "engagement";
     static final String LOOKUP_TEST_PARAM = "scan_type";
     static final String LOOKUP_NAME_PARAM = "name";
@@ -155,6 +157,17 @@ public class ApiClient {
     @NonNull
     public List<JSONObject> getScanTypes() throws ApiClientException {
         return getData(SCAN_TYPE_URL);
+    }
+
+    @NonNull
+    public List<JSONObject> getToolConfigurations() throws ApiClientException {
+        return getData(TOOL_CONFIGURATIONS_URL);
+    }
+
+    @NonNull
+    public List<JSONObject> getProductApiConfiguration(final String productId) throws ApiClientException {
+        final String url = PRODUCT_API_SCAN_CONFIGURATIONS_URL + "?product=" + productId;
+        return getData(url);
     }
 
     @NonNull
@@ -404,7 +417,7 @@ public class ApiClient {
                     logger.log(body);
                 }
                 final var results = getRequestResult(body);
-                if (results.size() > 0) {
+                if (!results.isEmpty()) {
                     return ((JSONObject) results.get(0)).getString("id");
                 }
                 return null;
