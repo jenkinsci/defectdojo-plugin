@@ -211,14 +211,15 @@ public class ApiClient {
         if (StringUtils.isNotBlank(commitHash)) {
             jsonBody.put("commit_hash", commitHash);
         }
+
         jsonBody.put("do_not_reactivate", "true");
-        jsonBody.put("active ", "false");
+        jsonBody.put("active", "false");
         jsonBody.put("verified", "false");
         jsonBody.put("environment", "");
         jsonBody.put("minimum_severity", "Low");
 
         RequestBody fileRequestBody =
-                RequestBody.create(okhttp3.MediaType.parse("application/octet-stream"), new File(artifact.getRemote()));
+                RequestBody.create(new File(artifact.getRemote()), okhttp3.MediaType.parse("application/octet-stream"));
 
         if (StringUtils.isNotBlank(engagementId)) {
             scanId = getScanId(engagementId, scanType);
@@ -228,7 +229,7 @@ public class ApiClient {
             url = REUPLOAD_URL;
 
             jsonBody.put("test", scanId);
-            jsonBody.remove("active ");
+            jsonBody.remove("active");
             jsonBody.remove("verified");
         }
 
