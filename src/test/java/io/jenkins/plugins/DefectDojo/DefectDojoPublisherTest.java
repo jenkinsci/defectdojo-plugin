@@ -14,6 +14,8 @@
 package io.jenkins.plugins.DefectDojo;
 
 import static org.assertj.core.api.Assertions.assertThatCode;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.when;
 
 import com.cloudbees.plugins.credentials.CredentialsProvider;
@@ -23,14 +25,19 @@ import hudson.AbortException;
 import hudson.EnvVars;
 import hudson.FilePath;
 import hudson.Launcher;
+import hudson.model.FreeStyleBuild;
+import hudson.model.FreeStyleProject;
 import hudson.model.Job;
+import hudson.model.Node;
 import hudson.model.Run;
 import hudson.model.TaskListener;
+import hudson.slaves.DumbSlave;
 import hudson.util.Secret;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Path;
 import org.jenkinsci.plugins.plaincredentials.impl.StringCredentialsImpl;
+import org.junit.Rule;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
@@ -61,6 +68,9 @@ class DefectDojoPublisherTest {
     @Mock
     private ApiClient client;
 
+    @Rule
+    private JenkinsRule jenkinsRule;
+
     private final ApiClientFactory clientFactory = (url, apiKey, logger, connTimeout, readTimeout) -> client;
     private final String apikeyId = "api-key-id";
     private final Secret apikey = Secret.fromString("api-key");
@@ -68,6 +78,7 @@ class DefectDojoPublisherTest {
 
     @BeforeEach
     void setup(JenkinsRule r) throws ApiClientException, IOException {
+        this.jenkinsRule = r;
         when(listener.getLogger()).thenReturn(System.err);
 
         CredentialsProvider.lookupStores(r.jenkins)
@@ -135,5 +146,29 @@ class DefectDojoPublisherTest {
         assertThatCode(() -> uut5.perform(build, workDir, env, launcher, listener))
                 .isInstanceOf(AbortException.class)
                 .hasMessage(Messages.Builder_Artifact_NonExist("foo"));
+    }
+
+    @Test
+    void testRunOnAgent(@TempDir Path tmpWork) throws Exception {
+
+        DumbSlave agent = jenkinsRule.createSlave();
+        jenkinsRule.waitOnline(agent);
+        Node node = agent.toComputer().getNode();
+        assertNotNull(node);
+
+        File artifact = tmpWork.resolve("report.xml").toFile();
+        artifact.createNewFile();
+
+        FreeStyleProject project = jenkinsRule.createFreeStyleProject();
+        project.setAssignedNode(agent);
+        project.getPublishersList().add(new DefectDojoPublisher(artifact.getName(), scanType, clientFactory));
+
+        // Run the build on the agent
+        FreeStyleBuild build = project.scheduleBuild2(0).get();
+        jenkinsRule.waitUntilNoActivity();
+
+        // Validate the build log
+        String log = JenkinsRule.getLog(build);
+        assertTrue(log.contains(Messages.Publisher_Agent_Anouncement()));
     }
 }

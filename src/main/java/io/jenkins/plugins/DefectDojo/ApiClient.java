@@ -180,7 +180,7 @@ public class ApiClient {
 
     @NonNull
     @SuppressFBWarnings("NP_NULL_ON_SOME_PATH_FROM_RETURN_VALUE")
-    public Boolean upload(
+    public boolean upload(
             final String projectId,
             final String engagementId,
             @Nullable final String sourceCodeUri,
@@ -201,6 +201,11 @@ public class ApiClient {
         jsonBody.put("scan_type", scanType);
         jsonBody.put("engagement", engagementId);
         jsonBody.put("product_id", projectId);
+        jsonBody.put("do_not_reactivate", "true");
+        jsonBody.put("active", "false");
+        jsonBody.put("verified", "false");
+        jsonBody.put("environment", "");
+        jsonBody.put("minimum_severity", "Low");
 
         if (StringUtils.isNotBlank(sourceCodeUri)) {
             jsonBody.put("source_code_management_uri", sourceCodeUri);
@@ -211,15 +216,6 @@ public class ApiClient {
         if (StringUtils.isNotBlank(commitHash)) {
             jsonBody.put("commit_hash", commitHash);
         }
-
-        jsonBody.put("do_not_reactivate", "true");
-        jsonBody.put("active", "false");
-        jsonBody.put("verified", "false");
-        jsonBody.put("environment", "");
-        jsonBody.put("minimum_severity", "Low");
-
-        RequestBody fileRequestBody =
-                RequestBody.create(new File(artifact.getRemote()), okhttp3.MediaType.parse("application/octet-stream"));
 
         if (StringUtils.isNotBlank(engagementId)) {
             scanId = getScanId(engagementId, scanType);
@@ -233,9 +229,17 @@ public class ApiClient {
             jsonBody.remove("verified");
         }
 
-        RequestBody uploadBody = createMultipartBody(jsonBody, fileRequestBody);
+        ReportUploadCallable callable = new ReportUploadCallable(this, jsonBody, url);
+        return artifact.act(callable);
+    }
+
+    boolean performUpload(File artifact, JSONObject requestBody, String url) throws IOException {
+        RequestBody fileRequestBody = RequestBody.create(artifact, okhttp3.MediaType.parse("application/octet-stream"));
+
+        RequestBody uploadBody = createMultipartBody(requestBody, fileRequestBody);
         final var request = createRequest(URI.create(url), "POST", uploadBody);
-        return executeWithRetry(() -> {
+
+        executeWithRetry(() -> {
             try (var response = httpClient.newCall(request).execute()) {
                 final var body = response.body().string();
                 final int status = response.code();
@@ -257,12 +261,13 @@ public class ApiClient {
                     default:
                         logger.log(Messages.ApiClient_Error_Connection(
                                 status, HttpStatus.valueOf(status).getReasonPhrase()));
-                        break;
+                        return false;
                 }
                 logger.log(body);
-                return false;
             }
+            return false;
         });
+        return false;
     }
 
     public String createEngagement(String engagementName, String productId, @Nullable String sourceCodeUrl)

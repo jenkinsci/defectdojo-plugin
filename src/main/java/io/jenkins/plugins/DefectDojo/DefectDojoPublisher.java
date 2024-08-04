@@ -19,6 +19,7 @@ import hudson.AbortException;
 import hudson.EnvVars;
 import hudson.FilePath;
 import hudson.Launcher;
+import hudson.model.Node;
 import hudson.model.Run;
 import hudson.model.TaskListener;
 import hudson.tasks.BuildStepMonitor;
@@ -184,6 +185,11 @@ public final class DefectDojoPublisher extends Recorder implements SimpleBuildSt
         final boolean effectiveAutoCreateEngagement = isEffectiveAutoCreateEngagements();
         final boolean effectiveReupload = isEffectiveReuploadScan();
         projectIdCache = null;
+        Node node = workspace.toComputer().getNode();
+
+        if (node != null) {
+            logger.log(Messages.Publisher_Agent_Anouncement());
+        }
 
         if (StringUtils.isBlank(effectiveArtifact)) {
             logger.log(Messages.Builder_Artifact_Unspecified());
