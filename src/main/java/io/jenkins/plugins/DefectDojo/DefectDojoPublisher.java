@@ -19,15 +19,18 @@ import hudson.AbortException;
 import hudson.EnvVars;
 import hudson.FilePath;
 import hudson.Launcher;
+import hudson.model.Computer;
 import hudson.model.Node;
 import hudson.model.Run;
 import hudson.model.TaskListener;
+import hudson.remoting.Callable;
 import hudson.tasks.BuildStepMonitor;
 import hudson.tasks.Recorder;
 import hudson.util.Secret;
 import java.io.IOException;
 import java.io.Serializable;
 import java.util.Optional;
+import jenkins.security.Roles;
 import jenkins.tasks.SimpleBuildStep;
 import lombok.AccessLevel;
 import lombok.EqualsAndHashCode;
@@ -35,6 +38,7 @@ import lombok.Getter;
 import lombok.Setter;
 import org.apache.commons.lang.StringUtils;
 import org.jenkinsci.plugins.plaincredentials.StringCredentials;
+import org.jenkinsci.remoting.RoleChecker;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.DataBoundSetter;
 
@@ -185,8 +189,11 @@ public final class DefectDojoPublisher extends Recorder implements SimpleBuildSt
         final boolean effectiveAutoCreateEngagement = isEffectiveAutoCreateEngagements();
         final boolean effectiveReupload = isEffectiveReuploadScan();
         projectIdCache = null;
-        Node node = workspace.toComputer().getNode();
-
+        Node node = null;
+        Computer computer = workspace.toComputer();
+        if (computer != null) {
+            node = computer.getNode();
+        }
         if (node != null) {
             logger.log(Messages.Publisher_Agent_Anouncement());
         }
@@ -254,23 +261,62 @@ public final class DefectDojoPublisher extends Recorder implements SimpleBuildSt
         }
 
         logger.log(Messages.Builder_Publishing(effectiveUrl));
-        final boolean uploadResult = apiClient.upload(
-                productId,
-                engagementId,
-                effectiveSourceCodeUrl,
-                effectiveBranchTag,
-                effectiveCommitHash,
-                artifactFilePath,
-                scanType,
-                effectiveReupload);
+        if (node != null) {
+            workspace.act(new Callable<Boolean, IOException>() {
+                private static final long serialVersionUID = 1L;
 
-        if (!uploadResult) {
-            throw new AbortException(Messages.Builder_Upload_Failed());
+                @Override
+                public Boolean call() throws IOException {
+                    final ApiClient apiClient = clientFactory.create(
+                            effectiveUrl,
+                            effectiveApiKey,
+                            logger,
+                            getEffectiveConnectionTimeout(),
+                            getEffectiveReadTimeout());
+                    try {
+                        return apiClient.upload(
+                                productId,
+                                engagementId,
+                                effectiveSourceCodeUrl,
+                                effectiveBranchTag,
+                                effectiveCommitHash,
+                                artifactFilePath,
+                                scanType,
+                                effectiveReupload);
+                    } catch (IOException e) {
+                        // TODO Auto-generated catch block
+                        e.printStackTrace();
+                    } catch (InterruptedException e) {
+                        // TODO Auto-generated catch block
+                        e.printStackTrace();
+                    }
+                    return false;
+                }
+
+                @Override
+                public void checkRoles(RoleChecker checker) throws SecurityException {
+                    checker.check(this, Roles.SLAVE);
+                }
+            });
+        } else {
+            final boolean uploadResult = apiClient.upload(
+                    productId,
+                    engagementId,
+                    effectiveSourceCodeUrl,
+                    effectiveBranchTag,
+                    effectiveCommitHash,
+                    artifactFilePath,
+                    scanType,
+                    effectiveReupload);
+
+            if (!uploadResult) {
+                throw new AbortException(Messages.Builder_Upload_Failed());
+            }
+
+            logger.log(Messages.Builder_Success(String.format(
+                    "%s/engagements/%s",
+                    getEffectiveUrl(), StringUtils.isNotBlank(engagementId) ? engagementId : StringUtils.EMPTY)));
         }
-
-        logger.log(Messages.Builder_Success(String.format(
-                "%s/engagements/%s",
-                getEffectiveUrl(), StringUtils.isNotBlank(engagementId) ? engagementId : StringUtils.EMPTY)));
     }
 
     /**

@@ -229,8 +229,7 @@ public class ApiClient {
             jsonBody.remove("verified");
         }
 
-        ReportUploadCallable callable = new ReportUploadCallable(this, jsonBody, url);
-        return artifact.act(callable);
+        return performUpload(new File(artifact.getRemote()), jsonBody, url);
     }
 
     boolean performUpload(File artifact, JSONObject requestBody, String url) throws IOException {
