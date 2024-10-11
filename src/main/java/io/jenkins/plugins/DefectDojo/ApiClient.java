@@ -57,7 +57,7 @@ public class ApiClient {
 
     private static final String API_URL = "/api/v2";
     static final String API_KEY_HEADER = "Authorization";
-    static final String ENGAGEMENT_URL = API_URL + "/engagements/";
+    static final String ENGAGEMENT_URL = API_URL + "/engagement/";
     static final String UPLOAD_URL = API_URL + "/import-scan/";
     static final String REUPLOAD_URL = API_URL + "/reimport-scan/";
     static final String PRODUCT_URL = API_URL + "/products/";
