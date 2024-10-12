@@ -2,7 +2,7 @@
 
 The [DefectDojo](https://www.defectdojo.com/) Jenkins plugin that helps integrate Jenkins CI with syncing with DefectDojo.
 
-[DefectDojo](https://www.defectdojo.com/) automates away security drudgery. The data model allows for a high level of flexibility providing continuous feedback and optimization across entire security program and DevSecOps pipeline. 
+[DefectDojo](https://www.defectdojo.com/) automates away security drudgery. The data model allows for a high level of flexibility providing continuous feedback and optimization across entire security program and DevSecOps pipeline.
 
 It stores, normalizes, and deduplicates results from over 160 security tools and converts them to a single actionable report. With less noise in the system, DevSecOps activities are prioritized to match the SLAs set.
 
@@ -58,7 +58,7 @@ pipeline {
         stage('DefectDojoPublisher') {
             steps {
                 withCredentials([string(credentialsId: 'CREDENTIALS_ID', variable: 'API_KEY')]) {
-                    defectDojoPublisher(artifact: 'target/dependency-check-report.xml', productName: 'my-product', scanType: 'Dependency Check Scan', engagementName: 'ci/cd', defectDojoCredentialsId: API_KEY, sourceCodeUri: 'https://git.com/org/project.git', branchTag: 'main')
+                    defectDojoPublisher(artifact: 'target/dependency-check-report.xml', productName: 'my-product', scanType: 'Dependency Check Scan', engagementName: 'ci/cd', defectDojoCredentialsId: API_KEY, sourceCodeUrl: 'https://git.com/org/project.git', branchTag: 'main')
                 }
             }
         }

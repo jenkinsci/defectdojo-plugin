@@ -263,7 +263,7 @@ public final class DefectDojoPublisher extends Recorder implements SimpleBuildSt
         }
 
         logger.log(Messages.Builder_Success(String.format(
-                "%s/engagements/%s",
+                "%s/engagement/%s",
                 getEffectiveUrl(), StringUtils.isNotBlank(engagementId) ? engagementId : StringUtils.EMPTY)));
     }
 
