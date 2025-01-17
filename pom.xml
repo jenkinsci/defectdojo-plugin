@@ -102,7 +102,7 @@
     <dependency>
       <groupId>io.projectreactor.netty</groupId>
       <artifactId>reactor-netty</artifactId>
-      <version>[1.2.0,1.2.99)</version>
+      <version>1.2.2</version>
       <scope>test</scope>
     </dependency>
     <dependency>
