@@ -26,6 +26,7 @@ import edu.umd.cs.findbugs.annotations.NonNull;
 import edu.umd.cs.findbugs.annotations.Nullable;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.FilePath;
+import hudson.Util;
 import hudson.util.Secret;
 import io.jenkins.plugins.okhttp.api.JenkinsOkHttpClient;
 import java.io.File;
@@ -43,7 +44,6 @@ import okhttp3.MultipartBody;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.RequestBody;
-import org.apache.commons.lang.StringUtils;
 import org.springframework.http.HttpStatus;
 import org.springframework.retry.RetryPolicy;
 import org.springframework.retry.backoff.UniformRandomBackOffPolicy;
@@ -135,8 +135,7 @@ public class ApiClient {
             } catch (ApiClientException e) {
                 throw e;
             } catch (IOException e) {
-                throw new ApiClientException(
-                        Messages.ApiClient_Error_Connection(StringUtils.EMPTY, StringUtils.EMPTY), e);
+                throw new ApiClientException(Messages.ApiClient_Error_Connection("", ""), e);
             }
         });
     }
@@ -202,13 +201,13 @@ public class ApiClient {
         jsonBody.put("engagement", engagementId);
         jsonBody.put("product_id", projectId);
 
-        if (StringUtils.isNotBlank(sourceCodeUri)) {
+        if (Util.fixEmptyAndTrim(sourceCodeUri) != null) {
             jsonBody.put("source_code_management_uri", sourceCodeUri);
         }
-        if (StringUtils.isNotBlank(branchTag)) {
+        if (Util.fixEmptyAndTrim(branchTag) != null) {
             jsonBody.put("branch_tag", branchTag);
         }
-        if (StringUtils.isNotBlank(commitHash)) {
+        if (Util.fixEmptyAndTrim(commitHash) != null) {
             jsonBody.put("commit_hash", commitHash);
         }
 
@@ -221,11 +220,11 @@ public class ApiClient {
         RequestBody fileRequestBody =
                 RequestBody.create(new File(artifact.getRemote()), okhttp3.MediaType.parse("application/octet-stream"));
 
-        if (StringUtils.isNotBlank(engagementId)) {
+        if (Util.fixEmptyAndTrim(engagementId) != null) {
             scanId = getScanId(engagementId, scanType);
         }
 
-        if (reuploadScan && StringUtils.isNotBlank(scanId)) {
+        if (reuploadScan && Util.fixEmptyAndTrim(scanId) != null) {
             url = REUPLOAD_URL;
 
             jsonBody.put("test", scanId);
@@ -278,7 +277,7 @@ public class ApiClient {
         jsonBody.put("target_start", currentDate.format(dateFormatter));
         jsonBody.put("target_end", currentDate.plusDays(30).format(dateFormatter));
 
-        if (StringUtils.isNotBlank(sourceCodeUrl)) {
+        if (Util.fixEmptyAndTrim(sourceCodeUrl) != null) {
             jsonBody.put("source_code_management_uri", sourceCodeUrl);
         }
 
@@ -317,7 +316,7 @@ public class ApiClient {
 
         jsonBody.put("name", productName);
 
-        if (StringUtils.isNotBlank(origin)) {
+        if (Util.fixEmptyAndTrim(origin) != null) {
             jsonBody.put("origin", origin);
         }
 
@@ -380,8 +379,7 @@ public class ApiClient {
                 }
                 return new JSONArray();
             } catch (IOException e) {
-                throw new ApiClientException(
-                        Messages.ApiClient_Error_Connection(StringUtils.EMPTY, StringUtils.EMPTY), e);
+                throw new ApiClientException(Messages.ApiClient_Error_Connection("", ""), e);
             }
         });
     }
@@ -412,8 +410,7 @@ public class ApiClient {
             } catch (ApiClientException e) {
                 throw e;
             } catch (IOException e) {
-                throw new ApiClientException(
-                        Messages.ApiClient_Error_Connection(StringUtils.EMPTY, StringUtils.EMPTY), e);
+                throw new ApiClientException(Messages.ApiClient_Error_Connection("", ""), e);
             }
         });
     }
