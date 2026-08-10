@@ -19,6 +19,7 @@ import hudson.AbortException;
 import hudson.EnvVars;
 import hudson.FilePath;
 import hudson.Launcher;
+import hudson.Util;
 import hudson.model.Computer;
 import hudson.model.Node;
 import hudson.model.Run;
@@ -35,7 +36,6 @@ import lombok.AccessLevel;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Setter;
-import org.apache.commons.lang.StringUtils;
 import org.jenkinsci.plugins.plaincredentials.StringCredentials;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.DataBoundSetter;
@@ -188,19 +188,19 @@ public final class DefectDojoPublisher extends Recorder implements SimpleBuildSt
         final boolean effectiveReupload = isEffectiveReuploadScan();
         projectIdCache = null;
 
-        if (StringUtils.isBlank(effectiveArtifact)) {
+        if (Util.fixEmptyAndTrim(effectiveArtifact) == null) {
             logger.log(Messages.Builder_Artifact_Unspecified());
             throw new AbortException(Messages.Builder_Artifact_Unspecified());
         }
-        if (StringUtils.isBlank(effectiveScanType)) {
+        if (Util.fixEmptyAndTrim(effectiveScanType) == null) {
             logger.log(Messages.Builder_ScanType_Unspecified());
             throw new AbortException(Messages.Builder_ScanType_Unspecified());
         }
-        if (StringUtils.isBlank(productId) && (StringUtils.isBlank(effectiveProductName))) {
+        if (Util.fixEmptyAndTrim(productId) == null && (Util.fixEmptyAndTrim(effectiveProductName) == null)) {
             logger.log(Messages.Builder_Result_InvalidArguments());
             throw new AbortException(Messages.Builder_Result_InvalidArguments());
         }
-        if (StringUtils.isBlank(engagementId) && (StringUtils.isBlank(effectiveEngagementName))) {
+        if (Util.fixEmptyAndTrim(engagementId) == null && (Util.fixEmptyAndTrim(effectiveEngagementName) == null)) {
             logger.log(Messages.Builder_Result_InvalidArguments());
             throw new AbortException(Messages.Builder_Result_InvalidArguments());
         }
@@ -231,36 +231,36 @@ public final class DefectDojoPublisher extends Recorder implements SimpleBuildSt
         final ApiClient apiClient = clientFactory.create(
                 effectiveUrl, effectiveApiKey, logger, getEffectiveConnectionTimeout(), getEffectiveReadTimeout());
 
-        if (StringUtils.isNotBlank(effectiveProductName) && StringUtils.isBlank(productId)) {
+        if (Util.fixEmptyAndTrim(effectiveProductName) != null && Util.fixEmptyAndTrim(productId) == null) {
             logger.log(Messages.Builder_Fetching_Product(effectiveProductName));
             productId = apiClient.getProductId(effectiveProductName);
         }
 
         if (effectiveAutoCreateProduct
-                && StringUtils.isBlank(productId)
-                && StringUtils.isNotBlank(effectiveProductName)) {
+                && Util.fixEmptyAndTrim(productId) == null
+                && Util.fixEmptyAndTrim(effectiveProductName) != null) {
             logger.log(Messages.Builder_Publishing_Product(effectiveProductName));
             productId = apiClient.createProduct(effectiveProductName, null);
         }
 
-        if (StringUtils.isBlank(productId)) {
+        if (Util.fixEmptyAndTrim(productId) == null) {
             logger.log(Messages.Builder_Result_ProductIdMissing());
             throw new AbortException(Messages.Builder_Result_ProductIdMissing());
         }
 
-        if (StringUtils.isNotBlank(effectiveEngagementName) && StringUtils.isBlank(engagementId)) {
+        if (Util.fixEmptyAndTrim(effectiveEngagementName) != null && Util.fixEmptyAndTrim(engagementId) == null) {
             logger.log(Messages.Builder_Fetching_Engagement(effectiveEngagementName));
             engagementId = apiClient.getEngagementId(productId, effectiveEngagementName);
         }
 
         if (effectiveAutoCreateEngagement
-                && StringUtils.isNotBlank(effectiveEngagementName)
-                && StringUtils.isBlank(engagementId)) {
+                && Util.fixEmptyAndTrim(effectiveEngagementName) != null
+                && Util.fixEmptyAndTrim(engagementId) == null) {
             logger.log(Messages.Builder_Publishing_Engagement(effectiveProductName, effectiveEngagementName));
             engagementId = apiClient.createEngagement(effectiveEngagementName, productId, effectiveSourceCodeUrl);
         }
 
-        if (StringUtils.isBlank(engagementId)) {
+        if (Util.fixEmptyAndTrim(engagementId) == null) {
             logger.log(Messages.Builder_Result_EngagementIdMissing());
             throw new AbortException(Messages.Builder_Result_EngagementIdMissing());
         }
@@ -282,7 +282,7 @@ public final class DefectDojoPublisher extends Recorder implements SimpleBuildSt
 
         logger.log(Messages.Builder_Success(String.format(
                 "%s/engagement/%s",
-                getEffectiveUrl(), StringUtils.isNotBlank(engagementId) ? engagementId : StringUtils.EMPTY)));
+                getEffectiveUrl(), Util.fixEmptyAndTrim(engagementId) != null ? engagementId : "")));
     }
 
     /**
@@ -312,8 +312,8 @@ public final class DefectDojoPublisher extends Recorder implements SimpleBuildSt
         if (descriptor == null) {
             descriptor = getDescriptor();
         }
-        overrideGlobals = StringUtils.isNotBlank(defectDojoUrl)
-                || StringUtils.isNotBlank(defectDojoCredentialsId)
+        overrideGlobals = Util.fixEmptyAndTrim(defectDojoUrl) != null
+                || Util.fixEmptyAndTrim(defectDojoCredentialsId) != null
                 || autoCreateProducts != null;
         return this;
     }
@@ -350,7 +350,7 @@ public final class DefectDojoPublisher extends Recorder implements SimpleBuildSt
     private String getEffectiveUrl() {
         String url =
                 Optional.ofNullable(PluginUtil.parseBaseUrl(defectDojoUrl)).orElseGet(descriptor::getDefectDojoUrl);
-        return Optional.ofNullable(url).orElse(StringUtils.EMPTY);
+        return Optional.ofNullable(url).orElse("");
     }
 
     /**
@@ -360,7 +360,7 @@ public final class DefectDojoPublisher extends Recorder implements SimpleBuildSt
      * @return effective api-key
      */
     private Secret getEffectiveApiKey(final @NonNull Run<?, ?> run) {
-        final String credId = Optional.ofNullable(StringUtils.trimToNull(defectDojoCredentialsId))
+        final String credId = Optional.ofNullable(Util.fixEmptyAndTrim(defectDojoCredentialsId))
                 .orElseGet(descriptor::getDefectDojoCredentialsId);
         if (credId != null) {
             StringCredentials cred = CredentialsProvider.findCredentialById(credId, StringCredentials.class, run);

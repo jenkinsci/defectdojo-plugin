@@ -19,6 +19,7 @@ import com.cloudbees.plugins.credentials.domains.DomainRequirement;
 import edu.umd.cs.findbugs.annotations.CheckForNull;
 import edu.umd.cs.findbugs.annotations.Nullable;
 import hudson.Extension;
+import hudson.Util;
 import hudson.model.AbstractProject;
 import hudson.model.Descriptor;
 import hudson.model.Item;
@@ -39,7 +40,6 @@ import lombok.Getter;
 import lombok.NonNull;
 import lombok.Setter;
 import net.sf.json.JSONObject;
-import org.apache.commons.lang.StringUtils;
 import org.jenkinsci.Symbol;
 import org.jenkinsci.plugins.plaincredentials.StringCredentials;
 import org.kohsuke.stapler.AncestorInPath;
@@ -158,7 +158,7 @@ public class DescriptorImpl extends BuildStepDescriptor<Publisher> implements Se
                     Optional.ofNullable(PluginUtil.parseBaseUrl(defectDojoUrl)).orElseGet(this::getDefectDojoUrl);
             // api-key may come from instance-config. if empty, then take it from global config (this)
             final Secret apiKey = lookupApiKey(
-                    Optional.ofNullable(StringUtils.trimToNull(defectDojoCredentialsId))
+                    Optional.ofNullable(Util.fixEmptyAndTrim(defectDojoCredentialsId))
                             .orElseGet(this::getDefectDojoCredentialsId),
                     item);
             final ApiClient apiClient = getClient(url, apiKey);
@@ -166,10 +166,10 @@ public class DescriptorImpl extends BuildStepDescriptor<Publisher> implements Se
                     .map(p -> new ListBoxModel.Option(p.getString("name"), p.getString("id")))
                     .sorted(Comparator.comparing(o -> o.name))
                     .collect(Collectors.toList());
-            projects.add(new ListBoxModel.Option(Messages.Publisher_ProductList_Placeholder(), StringUtils.EMPTY));
+            projects.add(new ListBoxModel.Option(Messages.Publisher_ProductList_Placeholder(), ""));
             projects.addAll(options);
         } catch (ApiClientException e) {
-            projects.add(Messages.Builder_Error_Products(e.getLocalizedMessage()), StringUtils.EMPTY);
+            projects.add(Messages.Builder_Error_Products(e.getLocalizedMessage()), "");
         }
         return projects;
     }
@@ -195,13 +195,12 @@ public class DescriptorImpl extends BuildStepDescriptor<Publisher> implements Se
                     Optional.ofNullable(PluginUtil.parseBaseUrl(defectDojoUrl)).orElseGet(this::getDefectDojoUrl);
             // api-key may come from instance-config. if empty, then take it from global config (this)
             final Secret apiKey = lookupApiKey(
-                    Optional.ofNullable(StringUtils.trimToNull(defectDojoCredentialsId))
+                    Optional.ofNullable(Util.fixEmptyAndTrim(defectDojoCredentialsId))
                             .orElseGet(this::getDefectDojoCredentialsId),
                     item);
             final ApiClient apiClient = getClient(url, apiKey);
-            engagements.add(
-                    new ListBoxModel.Option(Messages.Publisher_EngagementList_Placeholder(), StringUtils.EMPTY));
-            if (!StringUtils.isBlank(productId)) {
+            engagements.add(new ListBoxModel.Option(Messages.Publisher_EngagementList_Placeholder(), ""));
+            if (Util.fixEmptyAndTrim(productId) != null) {
                 final List<ListBoxModel.Option> options = apiClient.getEngagements(productId).stream()
                         .map(p -> new ListBoxModel.Option(p.getString("name"), p.getString("id")))
                         .sorted(Comparator.comparing(o -> o.name))
@@ -209,7 +208,7 @@ public class DescriptorImpl extends BuildStepDescriptor<Publisher> implements Se
                 engagements.addAll(options);
             }
         } catch (ApiClientException e) {
-            engagements.add(Messages.Builder_Error_Products(e.getLocalizedMessage()), StringUtils.EMPTY);
+            engagements.add(Messages.Builder_Error_Products(e.getLocalizedMessage()), "");
         }
         return engagements;
     }
@@ -234,7 +233,7 @@ public class DescriptorImpl extends BuildStepDescriptor<Publisher> implements Se
                     Optional.ofNullable(PluginUtil.parseBaseUrl(defectDojoUrl)).orElseGet(this::getDefectDojoUrl);
             // api-key may come from instance-config. if empty, then take it from global config (this)
             final Secret apiKey = lookupApiKey(
-                    Optional.ofNullable(StringUtils.trimToNull(defectDojoCredentialsId))
+                    Optional.ofNullable(Util.fixEmptyAndTrim(defectDojoCredentialsId))
                             .orElseGet(this::getDefectDojoCredentialsId),
                     item);
             final ApiClient apiClient = getClient(url, apiKey);
@@ -242,10 +241,10 @@ public class DescriptorImpl extends BuildStepDescriptor<Publisher> implements Se
                     .map(p -> new ListBoxModel.Option(p.getString("name")))
                     .sorted(Comparator.comparing(o -> o.name))
                     .collect(Collectors.toList());
-            projects.add(new ListBoxModel.Option(Messages.Publisher_ScanTypeList_Placeholder(), StringUtils.EMPTY));
+            projects.add(new ListBoxModel.Option(Messages.Publisher_ScanTypeList_Placeholder(), ""));
             projects.addAll(options);
         } catch (ApiClientException e) {
-            projects.add(Messages.Builder_Error_Products(e.getLocalizedMessage()), StringUtils.EMPTY);
+            projects.add(Messages.Builder_Error_Products(e.getLocalizedMessage()), "");
         }
         return projects;
     }
@@ -328,7 +327,7 @@ public class DescriptorImpl extends BuildStepDescriptor<Publisher> implements Se
                 Optional.ofNullable(PluginUtil.parseBaseUrl(defectDojoUrl)).orElseGet(this::getDefectDojoUrl);
         // api-key may come from instance-config. if empty, then take it from global config (this)
         final Secret apiKey = lookupApiKey(
-                Optional.ofNullable(StringUtils.trimToNull(defectDojoCredentialsId))
+                Optional.ofNullable(Util.fixEmptyAndTrim(defectDojoCredentialsId))
                         .orElseGet(this::getDefectDojoCredentialsId),
                 item);
         if (doCheckDefectDojoUrl(url, item).kind == formValid && apiKey != null) {
