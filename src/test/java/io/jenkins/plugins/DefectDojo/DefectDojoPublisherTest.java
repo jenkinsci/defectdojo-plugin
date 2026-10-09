@@ -177,5 +177,11 @@ class DefectDojoPublisherTest {
         String log = JenkinsRule.getLog(build);
         System.out.println(log);
         assertTrue(log.contains(Messages.Publisher_Agent_Anouncement()));
+
+        FilePath copiedArtifact = new FilePath(jenkinsRule.jenkins.getRootPath(), "temp-upload-dir")
+                .child(node.getNodeName())
+                .child(artifact.getName());
+
+        assertTrue("Expected artifact to be copied to " + copiedArtifact.getRemote(), copiedArtifact.exists());
     }
 }
