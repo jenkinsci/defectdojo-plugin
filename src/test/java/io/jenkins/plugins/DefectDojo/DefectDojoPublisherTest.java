@@ -13,6 +13,7 @@
  */
 package io.jenkins.plugins.DefectDojo;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatCode;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
@@ -36,6 +37,9 @@ import hudson.util.Secret;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Path;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.UUID;
 import org.jenkinsci.plugins.plaincredentials.impl.StringCredentialsImpl;
 import org.junit.Rule;
 import org.junit.jupiter.api.BeforeEach;
@@ -178,10 +182,31 @@ class DefectDojoPublisherTest {
         System.out.println(log);
         assertTrue(log.contains(Messages.Publisher_Agent_Anouncement()));
 
-        FilePath copiedArtifact = new FilePath(jenkinsRule.jenkins.getRootPath(), "temp-upload-dir")
-                .child(node.getNodeName())
-                .child(artifact.getName());
+        FilePath tempRoot = new FilePath(jenkinsRule.jenkins.getRootPath(), "temp-upload-dir");
 
-        assertTrue("Expected artifact to be copied to " + copiedArtifact.getRemote(), copiedArtifact.exists());
+        String prefix = node.getNodeName() + "-";
+
+        List<FilePath> entries = tempRoot.list();
+        List<FilePath> matchingDirs = new ArrayList<>();
+
+        for (FilePath path : entries) {
+            if (path.getName().startsWith(prefix) && path.isDirectory()) {
+                matchingDirs.add(path);
+            }
+        }
+
+        assertThat(matchingDirs)
+                .as("Exactly one temporary directory should be created for the agent")
+                .hasSize(1);
+
+        FilePath tempDir = matchingDirs.get(0);
+        String uuidPart = tempDir.getName().substring(prefix.length());
+
+        UUID parsedUUID = UUID.fromString(uuidPart);
+        assertThat(parsedUUID.toString()).isEqualTo(uuidPart);
+
+        FilePath copiedArtifact = tempDir.child(artifact.getName());
+
+        assertTrue("Expected artifact to exist at " + copiedArtifact.getRemote(), copiedArtifact.exists());
     }
 }

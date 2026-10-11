@@ -219,9 +219,8 @@ public final class DefectDojoPublisher extends Recorder implements SimpleBuildSt
         }
         if (!(node instanceof Jenkins)) {
             logger.log(Messages.Publisher_Agent_Anouncement());
-            String agentName = node != null
-                    ? node.getNodeName()
-                    : "unknown-agent-" + UUID.randomUUID().toString();
+            String agentName = (node != null ? node.getNodeName() : "unknown-agent") + "-"
+                    + UUID.randomUUID().toString();
             FilePath tempDirOnMaster = new FilePath(Jenkins.get().getRootPath(), "temp-upload-dir").child(agentName);
             FilePath artifactOnMaster = tempDirOnMaster.child(artifactFilePath.getName());
             logger.log(Messages.Publisher_Agent_CopyToMaster(artifactFilePath, artifactOnMaster));
